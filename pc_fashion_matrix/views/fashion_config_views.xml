@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════ TEMPORADAS ══════════════ -->
+
+    <record id="fashion_season_tree" model="ir.ui.view">
+        <field name="name">fashion.season.tree</field>
+        <field name="model">fashion.season</field>
+        <field name="arch" type="xml">
+            <list string="Temporadas">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="season_type"/>
+                <field name="year"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="fashion_season_form" model="ir.ui.view">
+        <field name="name">fashion.season.form</field>
+        <field name="model">fashion.season</field>
+        <field name="arch" type="xml">
+            <form string="Temporada">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="season_type"/>
+                        </group>
+                        <group>
+                            <field name="year"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_fashion_season" model="ir.actions.act_window">
+        <field name="name">Temporadas</field>
+        <field name="res_model">fashion.season</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ══════════════ FAMILIAS ══════════════ -->
+
+    <record id="fashion_family_tree" model="ir.ui.view">
+        <field name="name">fashion.product.family.tree</field>
+        <field name="model">fashion.product.family</field>
+        <field name="arch" type="xml">
+            <list string="Familias de producto">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="parent_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="fashion_family_form" model="ir.ui.view">
+        <field name="name">fashion.product.family.form</field>
+        <field name="model">fashion.product.family</field>
+        <field name="arch" type="xml">
+            <form string="Familia de producto">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="parent_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Subfamilias">
+                            <field name="child_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_fashion_family" model="ir.actions.act_window">
+        <field name="name">Familias de producto</field>
+        <field name="res_model">fashion.product.family</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ══════════════ PERFILES DISTRIBUCIÓN ══════════════ -->
+
+    <record id="store_distribution_profile_tree" model="ir.ui.view">
+        <field name="name">store.distribution.profile.tree</field>
+        <field name="model">store.distribution.profile</field>
+        <field name="arch" type="xml">
+            <list string="Perfiles de distribución">
+                <field name="name"/>
+                <field name="total_percentage"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="store_distribution_profile_form" model="ir.ui.view">
+        <field name="name">store.distribution.profile.form</field>
+        <field name="model">store.distribution.profile</field>
+        <field name="arch" type="xml">
+            <form string="Perfil de distribución">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="total_percentage" widget="percentage"/>
+                        <field name="active"/>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="warehouse_id"/>
+                            <field name="percentage"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_store_distribution_profile" model="ir.actions.act_window">
+        <field name="name">Perfiles de distribución</field>
+        <field name="res_model">store.distribution.profile</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,26 @@
+.fashion-matrix-header {
+    border-left: 4px solid #714B67;
+}
+
+.store-distribution {
+    max-width: 500px;
+
+    table {
+        font-size: 0.875rem;
+    }
+}
+
+// Totales en el grid
+.o_matrix_total {
+    font-weight: bold;
+    background-color: #f8f9fa;
+    text-align: center;
+    min-width: 50px;
+}
+
+.o_matrix_grand_total {
+    font-weight: bold;
+    background-color: #e9ecef;
+    text-align: center;
+    font-size: 1.1em;
+}
