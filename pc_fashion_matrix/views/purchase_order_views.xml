@@ -21,22 +21,24 @@
                 </group>
             </xpath>
 
-            <!-- Botón transferencias a tiendas -->
-            <xpath expr="//button[@name='action_create_invoice']" position="after">
-                <button name="action_create_store_transfers"
-                        string="Distribuir a tiendas"
-                        type="object"
-                        class="btn-secondary"
-                        invisible="not distribution_data or state != 'purchase'"
-                        icon="fa-truck"/>
-                <button name="action_view_store_pickings"
-                        string="Transferencias tiendas"
-                        type="object"
-                        class="btn-link"
-                        invisible="store_picking_count == 0"
-                        icon="fa-truck">
-                    <field name="store_picking_count" widget="badge"/>
-                </button>
+            <!-- Botón transferencias a tiendas en la sheet, después del grupo de moda -->
+            <xpath expr="//group[@name='fashion_info']" position="after">
+                <div class="oe_button_box" name="fashion_button_box">
+                    <button name="action_create_store_transfers"
+                            string="Distribuir a tiendas"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="not distribution_data or state != 'purchase'"
+                            icon="fa-truck"/>
+                    <button name="action_view_store_pickings"
+                            string="Transferencias"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="store_picking_count == 0"
+                            icon="fa-truck">
+                        <field name="store_picking_count" widget="statinfo"/>
+                    </button>
+                </div>
             </xpath>
 
         </field>
