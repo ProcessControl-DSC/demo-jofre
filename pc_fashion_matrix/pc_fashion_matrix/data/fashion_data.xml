@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Temporadas -->
+        <record id="season_v2025" model="fashion.season">
+            <field name="code">V2025</field>
+            <field name="season_type">V</field>
+            <field name="year">2025</field>
+        </record>
+        <record id="season_i2025" model="fashion.season">
+            <field name="code">I2025</field>
+            <field name="season_type">I</field>
+            <field name="year">2025</field>
+        </record>
+        <record id="season_v2026" model="fashion.season">
+            <field name="code">V2026</field>
+            <field name="season_type">V</field>
+            <field name="year">2026</field>
+        </record>
+        <record id="season_i2026" model="fashion.season">
+            <field name="code">I2026</field>
+            <field name="season_type">I</field>
+            <field name="year">2026</field>
+        </record>
+
+        <!-- Familias de producto -->
+        <record id="family_coats" model="fashion.product.family">
+            <field name="name">Abrigos</field><field name="code">COATS</field>
+        </record>
+        <record id="family_jackets" model="fashion.product.family">
+            <field name="name">Chaquetas</field><field name="code">JACKETS</field>
+        </record>
+        <record id="family_blazers" model="fashion.product.family">
+            <field name="name">Blazers</field><field name="code">BLAZERS</field>
+        </record>
+        <record id="family_jeans" model="fashion.product.family">
+            <field name="name">Pantalones vaqueros</field><field name="code">JEANS</field>
+        </record>
+        <record id="family_trousers" model="fashion.product.family">
+            <field name="name">Pantalones</field><field name="code">TROUSERS</field>
+        </record>
+        <record id="family_shirts" model="fashion.product.family">
+            <field name="name">Camisas</field><field name="code">SHIRTS</field>
+        </record>
+        <record id="family_tshirts" model="fashion.product.family">
+            <field name="name">Camisetas</field><field name="code">TSHIRTS</field>
+        </record>
+        <record id="family_polos" model="fashion.product.family">
+            <field name="name">Polos</field><field name="code">POLOS</field>
+        </record>
+        <record id="family_knitwear" model="fashion.product.family">
+            <field name="name">Punto</field><field name="code">KNITWEAR</field>
+        </record>
+        <record id="family_sweatshirts" model="fashion.product.family">
+            <field name="name">Sudaderas</field><field name="code">SWEATSHIRTS</field>
+        </record>
+        <record id="family_dresses" model="fashion.product.family">
+            <field name="name">Vestidos</field><field name="code">DRESSES</field>
+        </record>
+        <record id="family_skirts" model="fashion.product.family">
+            <field name="name">Faldas</field><field name="code">SKIRTS</field>
+        </record>
+        <record id="family_blouses" model="fashion.product.family">
+            <field name="name">Blusas</field><field name="code">BLOUSES</field>
+        </record>
+        <record id="family_shoes" model="fashion.product.family">
+            <field name="name">Calzado</field><field name="code">SHOES</field>
+        </record>
+        <record id="family_bags" model="fashion.product.family">
+            <field name="name">Bolsos</field><field name="code">BAGS</field>
+        </record>
+        <record id="family_accessories" model="fashion.product.family">
+            <field name="name">Accesorios</field><field name="code">ACCESSORIES</field>
+        </record>
+
+    </data>
+</odoo>

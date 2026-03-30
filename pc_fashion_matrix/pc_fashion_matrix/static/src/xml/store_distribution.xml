@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="pc_fashion_matrix.StoreDistribution">
+        <div class="store-distribution border-top pt-3">
+            <h6 class="fw-bold mb-3">
+                <i class="fa fa-truck me-2"/>Distribución por tienda
+                <span class="badge bg-primary ms-2" t-esc="props.grandTotal + ' uds.'"/>
+            </h6>
+            <table class="table table-sm table-bordered">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Tienda</th>
+                        <th class="text-center">%</th>
+                        <th class="text-center">Uds.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="props.distribution" t-as="store" t-key="store.warehouse_id">
+                        <tr>
+                            <td t-esc="store.warehouse_name"/>
+                            <td class="text-center text-muted" t-esc="store.percentage.toFixed(1) + '%'"/>
+                            <td class="text-center fw-bold" t-esc="store.qty"/>
+                        </tr>
+                    </t>
+                </tbody>
+                <tfoot class="table-light">
+                    <tr class="fw-bold">
+                        <td>Total</td>
+                        <td class="text-center">100%</td>
+                        <td class="text-center" t-esc="props.grandTotal"/>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </t>
+
+</templates>
