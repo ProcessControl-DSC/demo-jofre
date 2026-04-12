@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================== -->
+    <!-- Wizard Form View — Multi-step -->
+    <!-- ================================================================== -->
+    <record id="view_b2b_order_import_wizard_form" model="ir.ui.view">
+        <field name="name">b2b.order.import.wizard.form</field>
+        <field name="model">b2b.order.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar pedido B2B">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="upload,preview,configure,done"/>
+                </header>
+                <sheet>
+                    <!-- ================================================== -->
+                    <!-- PASO 1: Subir fichero -->
+                    <!-- ================================================== -->
+                    <div invisible="state != 'upload'">
+                        <div class="oe_title">
+                            <h2>Importar pedido desde plataforma B2B</h2>
+                        </div>
+                        <group>
+                            <group string="Plataforma">
+                                <field name="platform" widget="radio"
+                                       options="{'horizontal': true}"/>
+                            </group>
+                            <group string="Fichero">
+                                <field name="file_data" filename="file_name"
+                                       widget="binary"
+                                       required="state == 'upload'"/>
+                                <field name="file_name" invisible="1"/>
+                            </group>
+                        </group>
+                        <div class="alert alert-info" role="alert"
+                             style="margin-top: 16px;">
+                            <strong>Formatos aceptados:</strong>
+                            <ul>
+                                <li><b>JOOR / NuORDER / The New Black:</b> Excel (.xlsx)</li>
+                                <li><b>MIRRI:</b> CSV (.csv) — Solo catálogo/stock, no crea pedido de compra</li>
+                            </ul>
+                        </div>
+                        <footer>
+                            <button name="action_parse_file" string="Analizar fichero"
+                                    type="object" class="btn-primary"/>
+                            <button string="Cancelar" class="btn-secondary"
+                                    special="cancel"/>
+                        </footer>
+                    </div>
+
+                    <!-- ================================================== -->
+                    <!-- PASO 2: Previsualización -->
+                    <!-- ================================================== -->
+                    <div invisible="state != 'preview'">
+                        <div class="oe_title">
+                            <h2>Previsualización de datos</h2>
+                        </div>
+
+                        <!-- Info del fichero -->
+                        <field name="preview_info" class="oe_no_button"
+                               readonly="1" nolabel="1"/>
+
+                        <!-- Tabla de líneas -->
+                        <notebook>
+                            <page string="Líneas de producto" name="lines">
+                                <field name="preview_line_ids" nolabel="1"
+                                       readonly="1">
+                                    <list>
+                                        <field name="line_number" string="Nº"/>
+                                        <field name="style_number"/>
+                                        <field name="style_name"/>
+                                        <field name="color"/>
+                                        <field name="color_code"/>
+                                        <field name="size"/>
+                                        <field name="quantity" sum="Total uds."/>
+                                        <field name="wholesale_price"/>
+                                        <field name="retail_price"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+
+                        <footer>
+                            <button name="action_configure" string="Continuar"
+                                    type="object" class="btn-primary"/>
+                            <button name="action_back_to_upload" string="Volver"
+                                    type="object" class="btn-secondary"/>
+                            <button string="Cancelar" class="btn-secondary"
+                                    special="cancel"/>
+                        </footer>
+                    </div>
+
+                    <!-- ================================================== -->
+                    <!-- PASO 3: Configuración -->
+                    <!-- ================================================== -->
+                    <div invisible="state != 'configure'">
+                        <div class="oe_title">
+                            <h2>Configuración de la importación</h2>
+                        </div>
+                        <group>
+                            <group string="Datos detectados">
+                                <field name="detected_brand" readonly="1"/>
+                                <field name="detected_po_number" readonly="1"/>
+                                <field name="file_name" readonly="1"/>
+                                <field name="platform" readonly="1"/>
+                            </group>
+                            <group string="Opciones">
+                                <field name="company_id"
+                                       options="{'no_create': True}"/>
+                                <field name="warehouse_id"
+                                       options="{'no_create': True}"/>
+                                <field name="supplier_id"
+                                       options="{'no_create': False}"
+                                       context="{'default_supplier_rank': 1}"/>
+                                <field name="auto_create_products"/>
+                                <field name="season"/>
+                            </group>
+                        </group>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="platform != 'mirri'"
+                             style="margin-top: 16px;">
+                            <strong>MIRRI — Importación de catálogo:</strong>
+                            No se creará pedido de compra. Solo se
+                            crearán/actualizarán productos en el catálogo.
+                            El proveedor es opcional.
+                        </div>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="platform == 'mirri'"
+                             style="margin-top: 16px;">
+                            <strong>Atención:</strong>
+                            Se creará un pedido de compra con todas las líneas
+                            importadas. Asegúrese de seleccionar el proveedor
+                            correcto.
+                        </div>
+
+                        <footer>
+                            <button name="action_confirm_import"
+                                    string="Confirmar importación"
+                                    type="object" class="btn-primary"
+                                    confirm="¿Está seguro de que desea importar estos datos? Se crearán productos y/o pedidos de compra."/>
+                            <button name="action_back_to_preview" string="Volver"
+                                    type="object" class="btn-secondary"/>
+                            <button string="Cancelar" class="btn-secondary"
+                                    special="cancel"/>
+                        </footer>
+                    </div>
+
+                    <!-- ================================================== -->
+                    <!-- PASO 4: Completado -->
+                    <!-- ================================================== -->
+                    <div invisible="state != 'done'">
+                        <div class="oe_title">
+                            <h2>Importación completada</h2>
+                        </div>
+                        <div class="alert alert-success" role="alert">
+                            <strong>La importación se ha realizado correctamente.</strong>
+                        </div>
+                        <group>
+                            <group string="Resultado">
+                                <field name="import_log_id" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <footer>
+                            <button name="action_view_purchase_order"
+                                    string="Ver pedido de compra"
+                                    type="object" class="btn-primary"
+                                    invisible="platform == 'mirri'"/>
+                            <button name="action_view_log"
+                                    string="Ver registro de importación"
+                                    type="object" class="btn-secondary"/>
+                            <button string="Cerrar" class="btn-secondary"
+                                    special="cancel"/>
+                        </footer>
+                    </div>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!-- Acción para abrir el wizard -->
+    <!-- ================================================================== -->
+    <record id="action_b2b_order_import_wizard" model="ir.actions.act_window">
+        <field name="name">Nueva importación B2B</field>
+        <field name="res_model">b2b.order.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
