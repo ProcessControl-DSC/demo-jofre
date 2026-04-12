@@ -60,12 +60,14 @@ class ProductTemplate(models.Model):
                 'src': f'/web/image/product.template/{template.id}/image_1920',
                 'is_main': True,
             })
-        for image in template.product_template_image_ids:
-            images.append({
-                'id': image.id,
-                'src': f'/web/image/product.image/{image.id}/image_1920',
-                'is_main': False,
-            })
+        # Extra images field comes from website_sale; handle gracefully if absent
+        if hasattr(template, 'product_template_image_ids'):
+            for image in template.product_template_image_ids:
+                images.append({
+                    'id': image.id,
+                    'src': f'/web/image/product.image/{image.id}/image_1920',
+                    'is_main': False,
+                })
 
         # Identify color and size attributes
         color_attr = None

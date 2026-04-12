@@ -71,7 +71,7 @@ class PurchaseOrder(models.Model):
                 supplierinfo = product.product_tmpl_id._select_seller(
                     partner_id=order.partner_id,
                     quantity=qty,
-                    uom_id=product.uom_po_id or product.uom_id,
+                    uom_id=product.uom_id,
                     date=order.date_order and order.date_order.date(),
                 )
                 if supplierinfo:
@@ -89,7 +89,7 @@ class PurchaseOrder(models.Model):
                     'product_id': product.id,
                     'name': product.display_name,
                     'product_qty': qty,
-                    'product_uom': (product.uom_po_id or product.uom_id).id,
+                    'product_uom_id': product.uom_id.id,
                     'price_unit': price_unit,
                     'taxes_id': [(6, 0, taxes.ids)],
                     'date_planned': order.date_planned or fields.Datetime.now(),

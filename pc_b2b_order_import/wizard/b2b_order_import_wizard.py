@@ -436,7 +436,7 @@ class B2bOrderImportWizard(models.TransientModel):
             'partner_id': supplier.id,
             'company_id': self.company_id.id,
             'partner_ref': parsed.get('po_number', ''),
-            'notes': 'Importado desde %s — PO# %s\nMarca: %s' % (
+            'note': 'Importado desde %s — PO# %s\nMarca: %s' % (
                 self.platform.upper() if self.platform != 'thenewblack' else 'The New Black',
                 parsed.get('po_number', ''),
                 parsed.get('brand', ''),
@@ -547,7 +547,7 @@ class B2bOrderImportWizard(models.TransientModel):
         po_vals = {
             'partner_id': supplier.id,
             'company_id': self.company_id.id,
-            'notes': 'Importado desde NuORDER\nTemporada: %s' % (
+            'note': 'Importado desde NuORDER\nTemporada: %s' % (
                 parsed.get('season', ''),
             ),
         }

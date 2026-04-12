@@ -32,9 +32,8 @@
                         ('date_expiry', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
                     ]"/>
                 <separator/>
-                <filter string="Esta semana" name="this_week" date="date_reservation">
-                    <filter name="this_week_filter" string="Esta semana" domain="[('date_reservation', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d 00:00:00'))]"/>
-                </filter>
+                <filter string="Esta semana" name="this_week"
+                    domain="[('date_reservation', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d 00:00:00'))]"/>
                 <filter string="Fecha de reserva" name="date_reservation" date="date_reservation"/>
                 <filter string="Fecha de expiración" name="date_expiry" date="date_expiry"/>
 

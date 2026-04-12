@@ -41,12 +41,6 @@
                                 <li><b>MIRRI:</b> CSV (.csv) — Solo catálogo/stock, no crea pedido de compra</li>
                             </ul>
                         </div>
-                        <footer>
-                            <button name="action_parse_file" string="Analizar fichero"
-                                    type="object" class="btn-primary"/>
-                            <button string="Cancelar" class="btn-secondary"
-                                    special="cancel"/>
-                        </footer>
                     </div>
 
                     <!-- ================================================== -->
@@ -80,15 +74,6 @@
                                 </field>
                             </page>
                         </notebook>
-
-                        <footer>
-                            <button name="action_configure" string="Continuar"
-                                    type="object" class="btn-primary"/>
-                            <button name="action_back_to_upload" string="Volver"
-                                    type="object" class="btn-secondary"/>
-                            <button string="Cancelar" class="btn-secondary"
-                                    special="cancel"/>
-                        </footer>
                     </div>
 
                     <!-- ================================================== -->
@@ -133,17 +118,6 @@
                             importadas. Asegúrese de seleccionar el proveedor
                             correcto.
                         </div>
-
-                        <footer>
-                            <button name="action_confirm_import"
-                                    string="Confirmar importación"
-                                    type="object" class="btn-primary"
-                                    confirm="¿Está seguro de que desea importar estos datos? Se crearán productos y/o pedidos de compra."/>
-                            <button name="action_back_to_preview" string="Volver"
-                                    type="object" class="btn-secondary"/>
-                            <button string="Cancelar" class="btn-secondary"
-                                    special="cancel"/>
-                        </footer>
                     </div>
 
                     <!-- ================================================== -->
@@ -161,21 +135,44 @@
                                 <field name="import_log_id" readonly="1"/>
                             </group>
                         </group>
-
-                        <footer>
-                            <button name="action_view_purchase_order"
-                                    string="Ver pedido de compra"
-                                    type="object" class="btn-primary"
-                                    invisible="platform == 'mirri'"/>
-                            <button name="action_view_log"
-                                    string="Ver registro de importación"
-                                    type="object" class="btn-secondary"/>
-                            <button string="Cerrar" class="btn-secondary"
-                                    special="cancel"/>
-                        </footer>
                     </div>
 
                 </sheet>
+                <footer invisible="state != 'upload'">
+                    <button name="action_parse_file" string="Analizar fichero"
+                            type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+                <footer invisible="state != 'preview'">
+                    <button name="action_configure" string="Continuar"
+                            type="object" class="btn-primary"/>
+                    <button name="action_back_to_upload" string="Volver"
+                            type="object" class="btn-secondary"/>
+                    <button string="Cancelar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+                <footer invisible="state != 'configure'">
+                    <button name="action_confirm_import"
+                            string="Confirmar importación"
+                            type="object" class="btn-primary"
+                            confirm="¿Está seguro de que desea importar estos datos? Se crearán productos y/o pedidos de compra."/>
+                    <button name="action_back_to_preview" string="Volver"
+                            type="object" class="btn-secondary"/>
+                    <button string="Cancelar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+                <footer invisible="state != 'done'">
+                    <button name="action_view_purchase_order"
+                            string="Ver pedido de compra"
+                            type="object" class="btn-primary"
+                            invisible="platform == 'mirri'"/>
+                    <button name="action_view_log"
+                            string="Ver registro de importación"
+                            type="object" class="btn-secondary"/>
+                    <button string="Cerrar" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
             </form>
         </field>
     </record>

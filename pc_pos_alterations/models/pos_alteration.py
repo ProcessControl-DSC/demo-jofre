@@ -123,6 +123,11 @@ class PosAlteration(models.Model):
         digits='Product Price',
         default=0.0,
     )
+    charged_to_customer = fields.Boolean(
+        string='Cobrado al cliente',
+        default=True,
+        help='Si está desmarcado, el arreglo se considera cortesía de la tienda.',
+    )
     is_overdue = fields.Boolean(
         string='Vencido',
         compute='_compute_is_overdue',
