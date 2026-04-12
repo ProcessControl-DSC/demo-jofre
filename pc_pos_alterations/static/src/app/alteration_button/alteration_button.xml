@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Añadir botón "Arreglo" al panel de control del product screen -->
+    <t t-name="pc_pos_alterations.ControlButtons" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('control-buttons')]" position="inside">
+            <button class="btn btn-light rounded-0 fw-bolder control-button"
+                    t-on-click="onClickAlteration">
+                <i class="fa fa-scissors me-1"/>
+                Arreglo
+            </button>
+        </xpath>
+    </t>
+
+</templates>

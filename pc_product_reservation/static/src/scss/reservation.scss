@@ -1,0 +1,56 @@
+/* PC Product Reservation - POS Styles */
+
+/* Reserve button on the product screen */
+.reserve-button {
+    background-color: #e67e22 !important;
+    border-color: #d35400 !important;
+    color: white !important;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: #d35400 !important;
+        border-color: #c0392b !important;
+    }
+
+    &:active {
+        background-color: #c0392b !important;
+    }
+}
+
+/* Reservation list popup */
+.reservation-popup {
+    /* Master list: row hover and selection */
+    .reservation-list {
+        table {
+            tr {
+                cursor: pointer;
+                transition: background-color 0.15s ease;
+            }
+        }
+    }
+
+    /* Detail panel */
+    .reservation-detail {
+        background-color: #fafbfc;
+
+        .table {
+            font-size: 0.9rem;
+        }
+    }
+}
+
+/* Reservation receipt */
+.reservation-receipt {
+    font-size: 12px;
+    line-height: 1.4;
+
+    h3 {
+        font-size: 16px;
+    }
+
+    hr {
+        border-style: dashed;
+        margin: 8px 0;
+    }
+}

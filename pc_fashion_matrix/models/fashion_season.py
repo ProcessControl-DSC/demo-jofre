@@ -1,26 +1,48 @@
-from odoo import models, fields, api
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+from odoo import fields, models
 
 
 class FashionSeason(models.Model):
     _name = 'fashion.season'
-    _description = 'Temporada de moda'
-    _order = 'year desc, season_type desc'
+    _description = 'Fashion Season'
+    _order = 'date_start desc, name'
 
-    name = fields.Char(compute='_compute_name', store=True)
-    code = fields.Char(required=True)
-    season_type = fields.Selection([
-        ('V', 'Verano / Spring-Summer'),
-        ('I', 'Invierno / Fall-Winter'),
-    ], required=True)
-    year = fields.Integer(required=True)
-    active = fields.Boolean(default=True)
-
-    @api.depends('season_type', 'year')
-    def _compute_name(self):
-        labels = {'V': 'Verano', 'I': 'Invierno'}
-        for rec in self:
-            rec.name = f"{labels.get(rec.season_type, '')} {rec.year}" if rec.year else rec.code
+    name = fields.Char(
+        string='Season',
+        required=True,
+        help='Season name, e.g. V2026 (Verano 2026), I2026 (Invierno 2026)',
+    )
+    code = fields.Char(
+        string='Code',
+        required=True,
+        help='Short code for the season, e.g. SS26, FW26',
+    )
+    date_start = fields.Date(
+        string='Start Date',
+        required=True,
+    )
+    date_end = fields.Date(
+        string='End Date',
+        required=True,
+    )
+    active = fields.Boolean(
+        string='Active',
+        default=True,
+    )
 
     _sql_constraints = [
-        ('code_uniq', 'unique(code)', 'El código de temporada debe ser único.'),
+        (
+            'code_unique',
+            'UNIQUE(code)',
+            'The season code must be unique.',
+        ),
+        (
+            'date_check',
+            'CHECK(date_end >= date_start)',
+            'The end date must be after the start date.',
+        ),
     ]
+
+    def name_get(self):
+        return [(rec.id, f"[{rec.code}] {rec.name}") for rec in self]

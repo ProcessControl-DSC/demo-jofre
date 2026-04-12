@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pc_product_reservation.ReservationListPopup">
+        <Dialog title="'Reservas de clientes'" size="'xl'">
+            <div class="reservation-popup d-flex flex-column" style="min-height: 70vh;">
+                <!-- Toolbar -->
+                <div class="d-flex align-items-center justify-content-between p-2 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Search -->
+                        <div class="input-group" style="max-width: 350px;">
+                            <span class="input-group-text"><i class="fa fa-search"/></span>
+                            <input type="text" class="form-control"
+                                   placeholder="Buscar cliente, referencia o producto..."
+                                   t-on-input="onSearchInput"
+                                   t-att-value="state.searchText"/>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" t-on-click="onClickRefresh">
+                            <i class="fa fa-refresh me-1"/>Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading state -->
+                <div t-if="state.isLoading" class="d-flex justify-content-center align-items-center flex-grow-1 py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <span class="ms-3 text-muted">Cargando reservas...</span>
+                </div>
+
+                <!-- Empty state -->
+                <div t-elif="state.filteredReservations.length === 0"
+                     class="d-flex flex-column justify-content-center align-items-center flex-grow-1 text-muted py-5">
+                    <i class="fa fa-bookmark-o fa-4x mb-3"/>
+                    <p class="fs-5 mb-1">No hay reservas activas</p>
+                    <p class="small text-center">
+                        Las reservas creadas desde el TPV o el backend aparecen aqui.
+                    </p>
+                </div>
+
+                <!-- Main content: list + detail -->
+                <div t-else="" class="d-flex flex-grow-1 overflow-hidden">
+                    <!-- Left panel: reservation list -->
+                    <div class="reservation-list overflow-auto border-end" style="width: 55%; min-width: 350px;">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Referencia</th>
+                                    <th>Cliente</th>
+                                    <th>Art.</th>
+                                    <th>Expira</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="state.filteredReservations" t-as="reservation" t-key="reservation.id">
+                                    <tr t-on-click="() => this.selectReservation(reservation.id)"
+                                        t-att-class="{
+                                            'table-active fw-bold': state.selectedReservationId === reservation.id,
+                                            'table-danger': isExpired(reservation.date_expiry),
+                                            'table-warning': !isExpired(reservation.date_expiry) and isExpiringSoon(reservation.date_expiry),
+                                        }"
+                                        style="cursor: pointer;">
+                                        <td>
+                                            <span t-out="reservation.name"/>
+                                        </td>
+                                        <td>
+                                            <i class="fa fa-user fa-fw text-muted me-1"/>
+                                            <span t-out="reservation.partner_name"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge text-bg-secondary" t-out="(reservation.lines || []).length"/>
+                                        </td>
+                                        <td>
+                                            <span t-att-class="{
+                                                'text-danger fw-bold': isExpired(reservation.date_expiry),
+                                                'text-warning': !isExpired(reservation.date_expiry) and isExpiringSoon(reservation.date_expiry),
+                                                'text-success': !isExpired(reservation.date_expiry) and !isExpiringSoon(reservation.date_expiry),
+                                            }">
+                                                <i class="fa fa-clock-o me-1"/>
+                                                <t t-out="getExpiryCountdown(reservation.date_expiry)"/>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Right panel: selected reservation detail -->
+                    <div class="reservation-detail overflow-auto p-3" style="width: 45%;">
+                        <t t-if="!selectedReservation">
+                            <div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
+                                <i class="fa fa-hand-pointer-o fa-3x mb-3"/>
+                                <p>Seleccione una reserva de la lista</p>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <t t-set="res" t-value="selectedReservation"/>
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="mb-1" t-out="res.name"/>
+                                    <div class="text-muted">
+                                        <i class="fa fa-user me-1"/>
+                                        <strong t-out="res.partner_name"/>
+                                    </div>
+                                </div>
+                                <span class="badge fs-6"
+                                      t-att-class="{
+                                          'text-bg-danger': isExpired(res.date_expiry),
+                                          'text-bg-warning': !isExpired(res.date_expiry) and isExpiringSoon(res.date_expiry),
+                                          'text-bg-success': !isExpired(res.date_expiry) and !isExpiringSoon(res.date_expiry),
+                                      }">
+                                    <i class="fa fa-clock-o me-1"/>
+                                    <t t-out="getExpiryCountdown(res.date_expiry)"/>
+                                </span>
+                            </div>
+
+                            <!-- Dates -->
+                            <div class="mb-3 small">
+                                <div class="row mb-1">
+                                    <div class="col-5 text-muted">Reservado:</div>
+                                    <div class="col-7" t-out="formatDate(res.date_reservation)"/>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5 text-muted">Expira:</div>
+                                    <div class="col-7 fw-bold"
+                                         t-att-class="{
+                                             'text-danger': isExpired(res.date_expiry),
+                                             'text-warning': isExpiringSoon(res.date_expiry),
+                                         }"
+                                         t-out="formatDate(res.date_expiry)"/>
+                                </div>
+                                <div t-if="res.note" class="row mb-1">
+                                    <div class="col-5 text-muted">Notas:</div>
+                                    <div class="col-7 fst-italic" t-out="res.note"/>
+                                </div>
+                            </div>
+
+                            <!-- Lines -->
+                            <h6 class="mb-2">Articulos reservados</h6>
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-center" style="width: 60px;">Cant.</th>
+                                        <th class="text-end" style="width: 90px;">Precio</th>
+                                        <th class="text-end" style="width: 90px;">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="res.lines || []" t-as="line" t-key="line.id">
+                                        <tr>
+                                            <td t-out="line.product_name"/>
+                                            <td class="text-center" t-out="line.product_qty"/>
+                                            <td class="text-end" t-out="formatCurrency(line.price_unit)"/>
+                                            <td class="text-end fw-bold"
+                                                t-out="formatCurrency(line.product_qty * line.price_unit)"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light">
+                                        <td colspan="3" class="text-end fw-bold">Total:</td>
+                                        <td class="text-end fw-bold fs-5"
+                                            t-out="formatCurrency(getTotalAmount(res))"/>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <!-- Action buttons -->
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-primary btn-lg flex-grow-1"
+                                        t-on-click="onClickCharge">
+                                    <i class="fa fa-shopping-cart me-2"/>Cobrar
+                                </button>
+                                <button class="btn btn-outline-danger btn-lg"
+                                        t-on-click="onClickCancel">
+                                    <i class="fa fa-times me-2"/>Cancelar reserva
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div t-if="!state.isLoading and state.filteredReservations.length > 0"
+                     class="border-top bg-light p-2 text-center text-muted small">
+                    <t t-out="state.filteredReservations.length"/> reserva(s) activa(s) en esta tienda
+                </div>
+            </div>
+        </Dialog>
+    </t>
+
+</templates>

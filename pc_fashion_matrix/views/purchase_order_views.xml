@@ -1,46 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="purchase_order_form_fashion" model="ir.ui.view">
+    <!-- Purchase Order: Extend Form View -->
+    <record id="purchase_order_form_view_fashion" model="ir.ui.view">
         <field name="name">purchase.order.form.fashion</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
-
-            <!-- Campos de moda después del partner -->
-            <xpath expr="//field[@name='partner_id']/.." position="after">
-                <group string="Información moda" name="fashion_info">
-                    <group>
-                        <field name="fashion_season_id"/>
-                        <field name="fashion_gender"/>
-                    </group>
-                    <group>
-                        <field name="fashion_family_id"/>
-                        <field name="distribution_profile_id"/>
-                    </group>
-                </group>
+            <!-- Add Distribute to Stores button in header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_distribute_to_stores"
+                        string="Distribute to Stores"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state not in ('purchase', 'done') or not distribution_profile_id"
+                        confirm="This will create internal transfers to distribute stock to stores based on the selected profile. Continue?"/>
             </xpath>
 
-            <!-- Botón transferencias a tiendas en la sheet, después del grupo de moda -->
-            <xpath expr="//group[@name='fashion_info']" position="after">
-                <div class="oe_button_box" name="fashion_button_box">
-                    <button name="action_create_store_transfers"
-                            string="Distribuir a tiendas"
+            <!-- Add fashion fields in a new group after existing info -->
+            <xpath expr="//page[@name='purchase_delivery_invoice']" position="before">
+                <page string="Fashion" name="fashion_info">
+                    <group>
+                        <group string="Season &amp; Classification">
+                            <field name="fashion_season_id"/>
+                            <field name="fashion_gender"/>
+                        </group>
+                        <group string="Distribution">
+                            <field name="distribution_profile_id"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+            <!-- Add Open Fashion Matrix button before order lines -->
+            <xpath expr="//page[@name='products']//field[@name='order_line']" position="before">
+                <div class="d-flex mb-2">
+                    <button name="action_open_fashion_matrix"
+                            string="Open Fashion Matrix"
                             type="object"
-                            class="oe_stat_button"
-                            invisible="not distribution_data or state != 'purchase'"
-                            icon="fa-truck"/>
-                    <button name="action_view_store_pickings"
-                            string="Transferencias"
-                            type="object"
-                            class="oe_stat_button"
-                            invisible="store_picking_count == 0"
-                            icon="fa-truck">
-                        <field name="store_picking_count" widget="statinfo"/>
-                    </button>
+                            class="btn-secondary"
+                            icon="fa-th"
+                            invisible="state in ('cancel',)"/>
                 </div>
             </xpath>
-
         </field>
     </record>
 

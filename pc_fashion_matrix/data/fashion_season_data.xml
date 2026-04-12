@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="season_ss25" model="fashion.season">
+            <field name="name">Primavera-Verano 2025</field>
+            <field name="code">SS25</field>
+            <field name="date_start">2025-01-15</field>
+            <field name="date_end">2025-07-31</field>
+        </record>
+        <record id="season_fw25" model="fashion.season">
+            <field name="name">Otoño-Invierno 2025</field>
+            <field name="code">FW25</field>
+            <field name="date_start">2025-06-15</field>
+            <field name="date_end">2025-12-31</field>
+        </record>
+        <record id="season_ss26" model="fashion.season">
+            <field name="name">Primavera-Verano 2026</field>
+            <field name="code">SS26</field>
+            <field name="date_start">2026-01-15</field>
+            <field name="date_end">2026-07-31</field>
+        </record>
+        <record id="season_fw26" model="fashion.season">
+            <field name="name">Otoño-Invierno 2026</field>
+            <field name="code">FW26</field>
+            <field name="date_start">2026-06-15</field>
+            <field name="date_end">2026-12-31</field>
+        </record>
+        <record id="season_ss27" model="fashion.season">
+            <field name="name">Primavera-Verano 2027</field>
+            <field name="code">SS27</field>
+            <field name="date_start">2027-01-15</field>
+            <field name="date_end">2027-07-31</field>
+        </record>
+        <record id="season_fw27" model="fashion.season">
+            <field name="name">Otoño-Invierno 2027</field>
+            <field name="code">FW27</field>
+            <field name="date_start">2027-06-15</field>
+            <field name="date_end">2027-12-31</field>
+        </record>
+    </data>
+</odoo>

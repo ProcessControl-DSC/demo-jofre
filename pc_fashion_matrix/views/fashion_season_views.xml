@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Fashion Season: Form View -->
+    <record id="fashion_season_view_form" model="ir.ui.view">
+        <field name="name">fashion.season.form</field>
+        <field name="model">fashion.season</field>
+        <field name="arch" type="xml">
+            <form string="Fashion Season">
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Primavera-Verano 2026"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="e.g. SS26"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Fashion Season: List View -->
+    <record id="fashion_season_view_list" model="ir.ui.view">
+        <field name="name">fashion.season.list</field>
+        <field name="model">fashion.season</field>
+        <field name="arch" type="xml">
+            <list string="Fashion Seasons">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Fashion Season: Search View -->
+    <record id="fashion_season_view_search" model="ir.ui.view">
+        <field name="name">fashion.season.search</field>
+        <field name="model">fashion.season</field>
+        <field name="arch" type="xml">
+            <search string="Search Seasons">
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Archived" name="archived" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter string="Current" name="current"
+                        domain="[('date_start', '&lt;=', context_today().strftime('%Y-%m-%d')),
+                                 ('date_end', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Fashion Season: Action -->
+    <record id="fashion_season_action" model="ir.actions.act_window">
+        <field name="name">Seasons</field>
+        <field name="res_model">fashion.season</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="fashion_season_view_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first fashion season
+            </p>
+            <p>
+                Seasons define the buying and selling periods for your fashion collections.
+            </p>
+        </field>
+    </record>
+
+</odoo>

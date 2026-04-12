@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Categoría de producto (interna) para arreglos -->
+    <record id="product_category_alterations" model="product.category">
+        <field name="name">Arreglos de ropa</field>
+    </record>
+
+    <!-- Categoría POS para arreglos (usada para detectar líneas de arreglo) -->
+    <record id="pos_category_arreglos" model="pos.category">
+        <field name="name">Arreglos</field>
+    </record>
+
+    <!-- Productos de servicio para cada tipo de arreglo -->
+    <record id="product_alteration_hemming" model="product.product">
+        <field name="name">Dobladillo</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_alterations"/>
+        <field name="pos_categ_ids" eval="[(6, 0, [ref('pos_category_arreglos')])]"/>
+        <field name="list_price">8.0</field>
+        <field name="sale_ok">True</field>
+        <field name="purchase_ok">False</field>
+        <field name="available_in_pos">True</field>
+    </record>
+
+    <record id="product_alteration_waist" model="product.product">
+        <field name="name">Ajuste cintura</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_alterations"/>
+        <field name="list_price">12.0</field>
+        <field name="sale_ok">True</field>
+        <field name="purchase_ok">False</field>
+        <field name="available_in_pos">True</field>
+    </record>
+
+    <record id="product_alteration_take_in" model="product.product">
+        <field name="name">Estrechar</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_alterations"/>
+        <field name="list_price">15.0</field>
+        <field name="sale_ok">True</field>
+        <field name="purchase_ok">False</field>
+        <field name="available_in_pos">True</field>
+    </record>
+
+    <record id="product_alteration_let_out" model="product.product">
+        <field name="name">Ensanchar</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_alterations"/>
+        <field name="list_price">15.0</field>
+        <field name="sale_ok">True</field>
+        <field name="purchase_ok">False</field>
+        <field name="available_in_pos">True</field>
+    </record>
+
+    <record id="product_alteration_sleeves" model="product.product">
+        <field name="name">Ajuste largo mangas</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_alterations"/>
+        <field name="list_price">10.0</field>
+        <field name="sale_ok">True</field>
+        <field name="purchase_ok">False</field>
+        <field name="available_in_pos">True</field>
+    </record>
+
+    <record id="product_alteration_zipper" model="product.product">
+        <field name="name">Arreglo cremallera</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_alterations"/>
+        <field name="list_price">18.0</field>
+        <field name="sale_ok">True</field>
+        <field name="purchase_ok">False</field>
+        <field name="available_in_pos">True</field>
+    </record>
+
+    <record id="product_alteration_shoulders" model="product.product">
+        <field name="name">Ajuste hombros</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_alterations"/>
+        <field name="list_price">20.0</field>
+        <field name="sale_ok">True</field>
+        <field name="purchase_ok">False</field>
+        <field name="available_in_pos">True</field>
+    </record>
+
+    <record id="product_alteration_other" model="product.product">
+        <field name="name">Otro arreglo</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_alterations"/>
+        <field name="list_price">10.0</field>
+        <field name="sale_ok">True</field>
+        <field name="purchase_ok">False</field>
+        <field name="available_in_pos">True</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Privilegio de grupo para Reservas -->
+    <record model="res.groups.privilege" id="res_groups_privilege_reservation">
+        <field name="name">Reservas de producto</field>
+        <field name="category_id" ref="base.module_category_inventory"/>
+    </record>
+
+    <!-- Grupo: Usuario de reservas (empleado de tienda) -->
+    <record id="group_reservation_user" model="res.groups">
+        <field name="name">Usuario</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_reservation"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">El usuario puede crear, confirmar y cancelar reservas en su almacén.</field>
+    </record>
+
+    <!-- Grupo: Responsable de reservas (manager) -->
+    <record id="group_reservation_manager" model="res.groups">
+        <field name="name">Responsable</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_reservation"/>
+        <field name="implied_ids" eval="[(4, ref('group_reservation_user'))]"/>
+        <field name="comment">El responsable puede gestionar todas las reservas de todos los almacenes y acceder a la configuración.</field>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+    <data noupdate="1">
+
+        <!-- Regla: usuarios solo ven reservas de su almacén -->
+        <record id="reservation_rule_user" model="ir.rule">
+            <field name="name">Reservas: usuario ve solo su almacén</field>
+            <field name="model_id" ref="model_product_reservation"/>
+            <field name="domain_force">[
+                '|',
+                ('warehouse_id.company_id', 'in', company_ids),
+                ('warehouse_id', '=', False),
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_reservation_user'))]"/>
+        </record>
+
+        <!-- Regla: responsables ven todas las reservas de su compañía -->
+        <record id="reservation_rule_manager" model="ir.rule">
+            <field name="name">Reservas: responsable ve todas (compañía)</field>
+            <field name="model_id" ref="model_product_reservation"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('group_reservation_manager'))]"/>
+        </record>
+
+        <!-- Regla multi-company para líneas de reserva -->
+        <record id="reservation_line_rule_company" model="ir.rule">
+            <field name="name">Líneas de reserva: multi-compañía</field>
+            <field name="model_id" ref="model_product_reservation_line"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('group_reservation_user'))]"/>
+        </record>
+
+    </data>
+
+</odoo>

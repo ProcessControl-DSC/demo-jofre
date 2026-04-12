@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pc_pos_alterations.AlterationReceipt">
+        <div class="pos-receipt alteration-receipt" style="font-family: monospace; width: 100%;">
+            <!-- Header tienda -->
+            <div class="pos-receipt-contact text-center mb-2">
+                <t t-if="props.alteration.warehouse_name">
+                    <div class="fw-bold" style="font-size: 1.2em;">
+                        <t t-esc="props.alteration.warehouse_name"/>
+                    </div>
+                </t>
+            </div>
+
+            <div class="text-center mb-2" style="border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 4px 0;">
+                <div class="fw-bold" style="font-size: 1.3em;">TICKET DE ARREGLO</div>
+            </div>
+
+            <!-- Referencia -->
+            <div class="text-center mb-2">
+                <div class="fw-bold" style="font-size: 1.4em;">
+                    <t t-esc="props.alteration.name"/>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid #000;" class="my-2"/>
+
+            <!-- Cliente -->
+            <div class="mb-1">
+                <span class="fw-bold">Cliente: </span>
+                <span t-esc="props.alteration.partner_name || 'Sin identificar'"/>
+            </div>
+            <div class="mb-2" t-if="props.alteration.partner_phone">
+                <span class="fw-bold">Tel: </span>
+                <span t-esc="props.alteration.partner_phone"/>
+            </div>
+
+            <div style="border-top: 1px solid #000;" class="my-2"/>
+
+            <!-- Producto -->
+            <div class="mb-1">
+                <span class="fw-bold">Producto: </span>
+                <span t-esc="props.alteration.product_name || 'N/A'"/>
+            </div>
+
+            <!-- Tipo arreglo -->
+            <div class="mb-1">
+                <span class="fw-bold">Tipo: </span>
+                <span t-esc="props.alteration.alteration_type"/>
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-1" t-if="props.alteration.description">
+                <span class="fw-bold">Notas: </span>
+                <span t-esc="props.alteration.description"/>
+            </div>
+
+            <!-- Coste -->
+            <div class="mb-1">
+                <span class="fw-bold">Valor: </span>
+                <span t-esc="formattedCost"/> EUR
+                <span class="ms-1">(Cortesía)</span>
+            </div>
+
+            <div style="border-top: 1px solid #000;" class="my-2"/>
+
+            <!-- Fecha -->
+            <div class="mb-1">
+                <span class="fw-bold">Fecha entrega: </span>
+                <span t-esc="formattedDate"/>
+            </div>
+
+            <!-- Método entrega -->
+            <div class="mb-1">
+                <span class="fw-bold">Entrega: </span>
+                <span t-esc="deliveryMethodText"/>
+            </div>
+
+            <div style="border-top: 2px dashed #000;" class="my-2"/>
+
+            <!-- Footer -->
+            <div class="text-center mt-2">
+                <div class="fw-bold">Conserve este ticket.</div>
+                <div>Necesario para recoger su prenda.</div>
+            </div>
+        </div>
+    </t>
+
+</templates>

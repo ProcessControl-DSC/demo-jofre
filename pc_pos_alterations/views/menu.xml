@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menú principal bajo Punto de Venta -->
+    <menuitem id="menu_pos_alterations_root"
+              name="Arreglos"
+              parent="point_of_sale.menu_point_root"
+              sequence="30"/>
+
+    <menuitem id="menu_pos_alterations"
+              name="Arreglos"
+              parent="menu_pos_alterations_root"
+              action="action_pos_alteration"
+              sequence="10"/>
+
+    <menuitem id="menu_alteration_types"
+              name="Tipos de Arreglo"
+              parent="menu_pos_alterations_root"
+              action="action_alteration_type"
+              sequence="20"
+              groups="group_alteration_manager"/>
+
+</odoo>

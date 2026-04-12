@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_reservation" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.reservation</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="stock.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='stock']" position="inside">
+                <block title="Reservas de producto" name="reservation_settings">
+                    <setting id="reservation_default_days" string="Duración de reserva por defecto"
+                             help="Número de días que una reserva estará activa antes de expirar automáticamente.">
+                        <div class="content-group">
+                            <div class="row mt16">
+                                <label for="pc_reservation_default_days" class="col-lg-3"/>
+                                <field name="pc_reservation_default_days" class="col-lg-2"/>
+                                <span class="col-lg-2">días</span>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="reservation_auto_expire" string="Expirar reservas automáticamente"
+                             help="Las reservas confirmadas que superen la fecha de expiración se cancelarán automáticamente y el stock volverá al almacén.">
+                        <field name="pc_reservation_auto_expire"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

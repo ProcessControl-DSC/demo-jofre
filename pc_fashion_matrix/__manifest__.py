@@ -1,18 +1,11 @@
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
-    'name': 'Fashion Matrix — Grid Compras/Ventas Moda',
+    'name': 'PC Fashion Matrix',
     'version': '19.0.1.0.0',
-    'category': 'Supply Chain/Purchase',
-    'summary': 'Grid matricial talla×color con distribución por tienda para retail moda',
-    'description': """
-        Extiende el product_matrix estándar de Odoo para el sector de moda retail.
-
-        Funcionalidades:
-        - Campos de moda en pedidos: temporada, género, familia de producto
-        - Grid matricial talla×color con totales por fila/columna
-        - Distribución automática por tienda (método de Hund)
-        - Creación de transferencias internas a tiendas desde el pedido de compra
-        - Informes de grid en pedidos impresos
-    """,
+    'category': 'Inventory/Purchase',
+    'summary': 'Enhanced visual product matrix for fashion retail',
+    'description': 'Visual order entry grid with product images, color swatches, '
+                   'size matrix and store distribution for fashion wholesale.',
     'author': 'Process Control',
     'website': 'https://www.processcontrol.es',
     'license': 'LGPL-3',
@@ -23,20 +16,23 @@
     ],
     'data': [
         'security/ir.model.access.csv',
-        'data/fashion_data.xml',
-        'views/fashion_config_views.xml',
-        'views/menus.xml',
+        'data/fashion_season_data.xml',
+        'data/fashion_family_data.xml',
+        'views/fashion_season_views.xml',
+        'views/fashion_product_family_views.xml',
+        'views/store_distribution_profile_views.xml',
+        'views/product_template_views.xml',
         'views/purchase_order_views.xml',
-        'views/sale_order_views.xml',
+        'views/menu.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'pc_fashion_matrix/static/src/scss/fashion_matrix.scss',
+            'pc_fashion_matrix/static/src/js/fashion_matrix_distribution.js',
             'pc_fashion_matrix/static/src/js/fashion_matrix_dialog.js',
-            'pc_fashion_matrix/static/src/js/store_distribution.js',
-            'pc_fashion_matrix/static/src/xml/*.xml',
+            'pc_fashion_matrix/static/src/xml/fashion_matrix_dialog.xml',
         ],
     },
     'installable': True,
-    'application': False,
+    'auto_install': False,
 }

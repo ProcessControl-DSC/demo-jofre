@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_inherit_reservation" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.reservation</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="priority" eval="20"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" type="object"
+                    groups="pc_product_reservation.group_reservation_user"
+                    name="action_open_reservations"
+                    context="{'default_partner_id': id}"
+                    icon="fa-bookmark">
+                    <div class="o_stat_info">
+                        <field name="reservation_count" class="o_stat_value"/>
+                        <span class="o_stat_text"> Reservas</span>
+                    </div>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>

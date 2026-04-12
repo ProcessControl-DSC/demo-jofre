@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pc_pos_alterations.AlterationPopup">
+        <Dialog size="'lg'" title="'Nuevo Arreglo'">
+            <div class="alteration-popup p-2">
+                <!-- Info producto -->
+                <div class="mb-3 p-2 bg-light rounded">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Producto:</strong>
+                            <span class="ms-1" t-esc="productName"/>
+                        </div>
+                        <div class="col-6">
+                            <strong>Cliente:</strong>
+                            <span class="ms-1" t-esc="partnerName"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tipo de arreglo -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tipo de arreglo</label>
+                    <select class="form-select" t-on-change="onTypeChange"
+                            t-att-value="state.alterationTypeId">
+                        <t t-foreach="alterationTypes" t-as="atype" t-key="atype.id">
+                            <option t-att-value="atype.id"
+                                    t-att-selected="atype.id === state.alterationTypeId">
+                                <t t-esc="atype.name"/>
+                                <t t-if="atype.product_id">
+                                    — <t t-esc="atype.product_id.list_price"/> EUR
+                                </t>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+
+                <!-- Descripción -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Descripción / Notas</label>
+                    <textarea class="form-control" rows="3"
+                              placeholder="Ej: Acortar 3cm pierna derecha, estrechar cintura 2cm..."
+                              t-on-input="onDescriptionChange"
+                              t-att-value="state.description"/>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Fecha entrega -->
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Fecha de entrega</label>
+                        <input type="date" class="form-control"
+                               t-on-change="onDateChange"
+                               t-att-value="state.datePromised"/>
+                    </div>
+                    <!-- Método entrega -->
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Método de entrega</label>
+                        <select class="form-select" t-on-change="onDeliveryMethodChange"
+                                t-att-value="state.deliveryMethod">
+                            <option value="pickup_store" t-att-selected="state.deliveryMethod === 'pickup_store'">
+                                Recogida en tienda
+                            </option>
+                            <option value="ship_customer" t-att-selected="state.deliveryMethod === 'ship_customer'">
+                                Envío a domicilio
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Coste informativo -->
+                <div class="mb-3 p-2 bg-info bg-opacity-10 rounded">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <strong>Valor del arreglo:</strong>
+                            <span class="ms-2 fs-5 fw-bold">
+                                <t t-esc="state.cost"/> EUR
+                            </span>
+                        </div>
+                        <div class="col-6 text-muted">
+                            <i class="fa fa-info-circle me-1"/>
+                            Habitualmente sin cargo (cortesía)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary btn-lg" t-on-click="onClickConfirm">
+                    <i class="fa fa-check me-1"/>Confirmar Arreglo
+                </button>
+                <button class="btn btn-secondary btn-lg" t-on-click="onClickCancel">
+                    Cancelar
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- SEARCH VIEW                                                  -->
+    <!-- ============================================================ -->
+
+    <record id="product_reservation_view_search" model="ir.ui.view">
+        <field name="name">product.reservation.search</field>
+        <field name="model">product.reservation</field>
+        <field name="arch" type="xml">
+            <search string="Buscar reservas">
+                <field name="name" string="Referencia"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="warehouse_id" string="Tienda"/>
+                <field name="user_id" string="Responsable"/>
+                <field name="line_ids" string="Producto" filter_domain="[('line_ids.product_id.name', 'ilike', self)]"/>
+
+                <filter string="Mis reservas" name="my_reservations" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Activas" name="active_reservations" domain="[('state', 'in', ('draft', 'confirmed'))]"/>
+                <filter string="Confirmadas" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Expiradas" name="expired" domain="[('state', '=', 'expired')]"/>
+                <filter string="Cobradas" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="Canceladas" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter string="Próximas a expirar (48h)" name="expiring_soon"
+                    domain="[
+                        ('state', '=', 'confirmed'),
+                        ('date_expiry', '&lt;=', (context_today() + datetime.timedelta(days=2)).strftime('%Y-%m-%d 23:59:59')),
+                        ('date_expiry', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                    ]"/>
+                <separator/>
+                <filter string="Esta semana" name="this_week" date="date_reservation">
+                    <filter name="this_week_filter" string="Esta semana" domain="[('date_reservation', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d 00:00:00'))]"/>
+                </filter>
+                <filter string="Fecha de reserva" name="date_reservation" date="date_reservation"/>
+                <filter string="Fecha de expiración" name="date_expiry" date="date_expiry"/>
+
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Tienda" name="group_warehouse" context="{'group_by': 'warehouse_id'}"/>
+                    <filter string="Cliente" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Responsable" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Fecha de reserva" name="group_date" context="{'group_by': 'date_reservation:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- LIST VIEW                                                    -->
+    <!-- ============================================================ -->
+
+    <record id="product_reservation_view_list" model="ir.ui.view">
+        <field name="name">product.reservation.list</field>
+        <field name="model">product.reservation</field>
+        <field name="arch" type="xml">
+            <list string="Reservas de producto"
+                  decoration-danger="state == 'expired' or (state == 'confirmed' and is_expired)"
+                  decoration-success="state == 'confirmed' and not is_expired"
+                  decoration-muted="state in ('cancelled', 'done')"
+                  default_order="date_reservation desc"
+                  sample="1">
+                <field name="name" string="Referencia"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="warehouse_id" string="Tienda"/>
+                <field name="date_reservation" string="Fecha reserva"/>
+                <field name="date_expiry" string="Expiración"/>
+                <field name="line_count" string="Artículos"/>
+                <field name="user_id" string="Responsable" widget="many2one_avatar_user"/>
+                <field name="state" string="Estado" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'confirmed'"
+                       decoration-warning="state == 'expired'"
+                       decoration-danger="state == 'cancelled'"
+                       decoration-muted="state == 'done'"/>
+                <field name="is_expired" column_invisible="True"/>
+                <field name="company_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- FORM VIEW                                                    -->
+    <!-- ============================================================ -->
+
+    <record id="product_reservation_view_form" model="ir.ui.view">
+        <field name="name">product.reservation.form</field>
+        <field name="model">product.reservation</field>
+        <field name="arch" type="xml">
+            <form string="Reserva de producto">
+                <header>
+                    <button name="action_confirm"
+                            string="Confirmar reserva"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"
+                            groups="pc_product_reservation.group_reservation_user"/>
+                    <button name="action_convert_to_sale"
+                            string="Convertir a venta"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'confirmed'"
+                            groups="pc_product_reservation.group_reservation_user"/>
+                    <button name="action_cancel"
+                            string="Cancelar"
+                            type="object"
+                            invisible="state not in ('draft', 'confirmed')"
+                            groups="pc_product_reservation.group_reservation_user"
+                            confirm="¿Está seguro de que desea cancelar esta reserva? El stock volverá al almacén."/>
+                    <button name="action_set_draft"
+                            string="Volver a borrador"
+                            type="object"
+                            invisible="state not in ('cancelled', 'expired')"
+                            groups="pc_product_reservation.group_reservation_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_sale_order"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-shopping-cart"
+                                invisible="not sale_order_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Pedido de venta</span>
+                            </div>
+                        </button>
+                        <button name="action_view_stock_moves"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-exchange"
+                                invisible="move_count == 0">
+                            <div class="o_stat_info">
+                                <field name="move_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Movimientos</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"
+                                   readonly="state not in ('draft',)"
+                                   context="{'res_partner_search_mode': 'customer'}"/>
+                            <field name="warehouse_id"
+                                   readonly="state not in ('draft',)"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                        </group>
+                        <group>
+                            <field name="date_reservation"
+                                   readonly="state not in ('draft',)"/>
+                            <field name="date_expiry"
+                                   readonly="state not in ('draft', 'confirmed')"
+                                   decoration-danger="is_expired"
+                                   decoration-warning="not is_expired and date_expiry and state == 'confirmed'"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="config_id" invisible="not config_id" readonly="1" string="TPV origen"/>
+                            <field name="sale_order_id" invisible="not sale_order_id" readonly="1"/>
+                            <field name="pos_order_id" invisible="not pos_order_id" readonly="1"/>
+                            <field name="reservation_location_id" invisible="1"/>
+                            <field name="is_expired" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Alerta visual si está próxima a expirar -->
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not is_expired">
+                        <strong>Esta reserva ha superado su fecha de expiración.</strong>
+                        El cron automático la cancelará en su próxima ejecución, o puede cancelarla manualmente.
+                    </div>
+
+                    <notebook>
+                        <page string="Líneas de reserva" name="lines">
+                            <field name="line_ids"
+                                   readonly="state not in ('draft',)">
+                                <list editable="bottom">
+                                    <field name="product_id"
+                                           context="{'display_default_code': True}"/>
+                                    <field name="product_uom_id" string="UdM" readonly="1"/>
+                                    <field name="product_qty"/>
+                                    <field name="price_unit"/>
+                                    <field name="move_id" string="Mov. stock"
+                                           readonly="1"
+                                           column_invisible="parent.state == 'draft'"/>
+                                    <field name="state" column_invisible="True"/>
+                                    <field name="company_id" column_invisible="True"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notas" name="notes">
+                            <field name="note" placeholder="Notas internas sobre la reserva (ej: el cliente pasará a recogerlo el viernes por la tarde)..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- KANBAN VIEW                                                  -->
+    <!-- ============================================================ -->
+
+    <record id="product_reservation_view_kanban" model="ir.ui.view">
+        <field name="name">product.reservation.kanban</field>
+        <field name="model">product.reservation</field>
+        <field name="arch" type="xml">
+            <kanban string="Reservas de producto"
+                    default_group_by="state"
+                    class="o_kanban_small_column"
+                    sample="1">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="warehouse_id"/>
+                <field name="date_expiry"/>
+                <field name="line_count"/>
+                <field name="state"/>
+                <field name="user_id"/>
+                <field name="is_expired"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <strong>
+                                <field name="name"/>
+                            </strong>
+                            <field name="state" widget="label_selection"
+                                   options="{'classes': {
+                                       'draft': 'info',
+                                       'confirmed': 'success',
+                                       'done': 'secondary',
+                                       'cancelled': 'danger',
+                                       'expired': 'warning'
+                                   }}"/>
+                        </div>
+                        <div class="text-muted mb-1">
+                            <field name="partner_id"/>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>
+                                <i class="fa fa-map-marker me-1" title="Tienda"/>
+                                <field name="warehouse_id"/>
+                            </span>
+                            <span>
+                                <field name="line_count"/> artículo(s)
+                            </span>
+                        </div>
+                        <div t-if="record.date_expiry.raw_value" class="mt-1">
+                            <span t-attf-class="badge #{record.is_expired.raw_value ? 'text-bg-danger' : 'text-bg-light'}">
+                                <i class="fa fa-clock-o me-1"/>
+                                Expira: <field name="date_expiry" widget="date"/>
+                            </span>
+                        </div>
+                        <div class="mt-1">
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- ACTIONS                                                      -->
+    <!-- ============================================================ -->
+
+    <record id="product_reservation_action" model="ir.actions.act_window">
+        <field name="name">Reservas de producto</field>
+        <field name="res_model">product.reservation</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="product_reservation_view_search"/>
+        <field name="context">{'search_default_active_reservations': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva reserva de producto
+            </p>
+            <p>
+                Reserve productos para sus clientes. El stock reservado se bloqueará
+                y no estará disponible en otros canales de venta.
+            </p>
+        </field>
+    </record>
+
+    <record id="product_reservation_action_all" model="ir.actions.act_window">
+        <field name="name">Todas las reservas</field>
+        <field name="res_model">product.reservation</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="product_reservation_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay reservas registradas
+            </p>
+        </field>
+    </record>
+
+</odoo>
