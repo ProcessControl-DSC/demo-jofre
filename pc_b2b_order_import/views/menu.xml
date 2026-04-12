@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================== -->
+    <!-- Menú principal bajo Compras -->
+    <!-- ================================================================== -->
+
+    <!-- Menú padre: Compras > Importar B2B -->
+    <menuitem id="menu_b2b_import_root"
+              name="Importar B2B"
+              parent="purchase.menu_purchase_root"
+              sequence="30"/>
+
+    <!-- Compras > Importar B2B > Nueva importación -->
+    <menuitem id="menu_b2b_import_wizard"
+              name="Nueva importación"
+              parent="menu_b2b_import_root"
+              action="action_b2b_order_import_wizard"
+              sequence="10"/>
+
+    <!-- Compras > Importar B2B > Historial de importaciones -->
+    <menuitem id="menu_b2b_import_log"
+              name="Historial de importaciones"
+              parent="menu_b2b_import_root"
+              action="action_b2b_import_log"
+              sequence="20"/>
+
+</odoo>

@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_b2b_import_log_user,b2b.import.log.user,model_b2b_import_log,purchase.group_purchase_user,1,1,1,0
+access_b2b_import_log_manager,b2b.import.log.manager,model_b2b_import_log,purchase.group_purchase_manager,1,1,1,1
+access_b2b_import_log_line_user,b2b.import.log.line.user,model_b2b_import_log_line,purchase.group_purchase_user,1,1,1,0
+access_b2b_import_log_line_manager,b2b.import.log.line.manager,model_b2b_import_log_line,purchase.group_purchase_manager,1,1,1,1
+access_b2b_order_import_wizard_user,b2b.order.import.wizard.user,model_b2b_order_import_wizard,purchase.group_purchase_user,1,1,1,1
+access_b2b_order_import_wizard_line_user,b2b.order.import.wizard.line.user,model_b2b_order_import_wizard_line,purchase.group_purchase_user,1,1,1,1
