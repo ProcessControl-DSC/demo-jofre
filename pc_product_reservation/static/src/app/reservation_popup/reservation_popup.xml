@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Reservation confirmations use the standard ask() dialog from
+         @point_of_sale/app/utils/make_awaitable_dialog.
+         No custom popup template needed. -->
+</templates>

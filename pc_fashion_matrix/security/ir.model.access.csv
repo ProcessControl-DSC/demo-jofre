@@ -1,9 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_fashion_season_user,fashion.season.user,model_fashion_season,base.group_user,1,0,0,0
 access_fashion_season_manager,fashion.season.manager,model_fashion_season,purchase.group_purchase_manager,1,1,1,1
-access_fashion_family_user,fashion.product.family.user,model_fashion_product_family,base.group_user,1,0,0,0
-access_fashion_family_manager,fashion.product.family.manager,model_fashion_product_family,purchase.group_purchase_manager,1,1,1,1
-access_store_dist_profile_user,store.distribution.profile.user,model_store_distribution_profile,base.group_user,1,0,0,0
-access_store_dist_profile_manager,store.distribution.profile.manager,model_store_distribution_profile,purchase.group_purchase_manager,1,1,1,1
-access_store_dist_line_user,store.distribution.profile.line.user,model_store_distribution_profile_line,base.group_user,1,0,0,0
-access_store_dist_line_manager,store.distribution.profile.line.manager,model_store_distribution_profile_line,purchase.group_purchase_manager,1,1,1,1
+access_fashion_product_family_user,fashion.product.family.user,model_fashion_product_family,base.group_user,1,0,0,0
+access_fashion_product_family_manager,fashion.product.family.manager,model_fashion_product_family,purchase.group_purchase_manager,1,1,1,1
+access_store_distribution_profile_user,store.distribution.profile.user,model_store_distribution_profile,base.group_user,1,0,0,0
+access_store_distribution_profile_manager,store.distribution.profile.manager,model_store_distribution_profile,stock.group_stock_manager,1,1,1,1
+access_store_distribution_profile_line_user,store.distribution.profile.line.user,model_store_distribution_profile_line,base.group_user,1,0,0,0
+access_store_distribution_profile_line_manager,store.distribution.profile.line.manager,model_store_distribution_profile_line,stock.group_stock_manager,1,1,1,1

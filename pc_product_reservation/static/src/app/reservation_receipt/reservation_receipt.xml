@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pc_product_reservation.ReservationReceipt">
+        <div class="pos-receipt reservation-receipt" style="font-family: monospace; width: 100%; max-width: 300px; margin: 0 auto;">
+            <!-- Header -->
+            <div class="text-center mb-3">
+                <h3 class="mb-1">COMPROBANTE DE RESERVA</h3>
+                <hr/>
+            </div>
+
+            <!-- Reservation info -->
+            <div class="mb-2">
+                <div class="d-flex justify-content-between">
+                    <span>Referencia:</span>
+                    <strong t-out="props.reservation.name"/>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Cliente:</span>
+                    <strong t-out="props.reservation.partner_name"/>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Fecha:</span>
+                    <span t-out="props.reservation.date_reservation"/>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Valida hasta:</span>
+                    <strong t-out="props.reservation.date_expiry"/>
+                </div>
+            </div>
+
+            <hr/>
+
+            <!-- Lines -->
+            <div class="mb-2">
+                <t t-foreach="props.reservation.lines || []" t-as="line" t-key="line.id">
+                    <div class="mb-1">
+                        <div t-out="line.product_name"/>
+                        <div class="d-flex justify-content-between ps-3">
+                            <span><t t-out="line.product_qty"/> x <t t-out="line.price_unit.toFixed(2)"/></span>
+                            <span t-out="(line.product_qty * line.price_unit).toFixed(2)"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <hr/>
+
+            <!-- Total -->
+            <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
+                <span>TOTAL:</span>
+                <span t-out="totalAmount.toFixed(2)"/>
+            </div>
+
+            <hr/>
+
+            <!-- Footer -->
+            <div class="text-center small mt-3">
+                <p>
+                    Presente este comprobante en tienda
+                    para recoger sus articulos antes de
+                    la fecha de expiracion.
+                </p>
+                <p class="text-muted">
+                    Pasada la fecha indicada, la reserva
+                    sera cancelada automaticamente.
+                </p>
+            </div>
+        </div>
+    </t>
+
+</templates>

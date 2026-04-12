@@ -1,0 +1,119 @@
+.alteration-screen {
+    background: #f8f9fa;
+
+    .alteration-screen-header {
+        background: #2F5496 !important;
+    }
+
+    .alteration-filters {
+        .btn {
+            min-width: 100px;
+        }
+    }
+
+    .alteration-card {
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        border-left: 4px solid #dee2e6;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.9rem;
+        }
+
+        .card-footer {
+            background: white;
+            border-top: 1px solid #eee;
+        }
+    }
+
+    /* State-specific left border colors */
+    .alteration-card:has(.bg-info) {
+        border-left-color: #0dcaf0;
+    }
+    .alteration-card:has(.bg-warning) {
+        border-left-color: #ffc107;
+    }
+    .alteration-card:has(.bg-success) {
+        border-left-color: #198754;
+    }
+    .alteration-card:has(.bg-secondary) {
+        border-left-color: #6c757d;
+    }
+    .alteration-card:has(.bg-danger) {
+        border-left-color: #dc3545;
+    }
+}
+
+/* Alteration popup */
+.alteration-popup {
+    .form-label {
+        color: #2F5496;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
+/* Alteration button in POS */
+.alteration-btn {
+    background-color: #6f42c1 !important;
+    border-color: #6f42c1 !important;
+    color: white !important;
+
+    &:hover {
+        background-color: #5a32a3 !important;
+        border-color: #5a32a3 !important;
+    }
+
+    i {
+        margin-right: 4px;
+    }
+}
+
+/* Receipt */
+.alteration-receipt {
+    font-family: monospace;
+    font-size: 12px;
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 10px;
+
+    .receipt-header {
+        text-align: center;
+        border-bottom: 1px dashed #000;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+    }
+
+    .receipt-title {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .receipt-section {
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed #ccc;
+    }
+
+    .receipt-label {
+        font-weight: bold;
+        display: inline-block;
+        min-width: 80px;
+    }
+
+    .receipt-footer {
+        text-align: center;
+        margin-top: 12px;
+        padding-top: 8px;
+        border-top: 1px dashed #000;
+        font-style: italic;
+        font-size: 11px;
+    }
+}

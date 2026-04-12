@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Top-level menu under Purchase -->
+    <menuitem id="menu_fashion_config_root"
+              name="Fashion"
+              parent="purchase.menu_purchase_config"
+              sequence="50"/>
+
+    <menuitem id="menu_fashion_season"
+              name="Seasons"
+              parent="menu_fashion_config_root"
+              action="fashion_season_action"
+              sequence="10"/>
+
+    <menuitem id="menu_fashion_product_family"
+              name="Product Families"
+              parent="menu_fashion_config_root"
+              action="fashion_product_family_action"
+              sequence="20"/>
+
+    <menuitem id="menu_store_distribution_profile"
+              name="Distribution Profiles"
+              parent="menu_fashion_config_root"
+              action="store_distribution_profile_action"
+              sequence="30"/>
+
+    <!-- Also add under Inventory > Configuration -->
+    <menuitem id="menu_fashion_config_stock_root"
+              name="Fashion"
+              parent="stock.menu_stock_config_settings"
+              sequence="60"/>
+
+    <menuitem id="menu_fashion_season_stock"
+              name="Seasons"
+              parent="menu_fashion_config_stock_root"
+              action="fashion_season_action"
+              sequence="10"/>
+
+    <menuitem id="menu_fashion_product_family_stock"
+              name="Product Families"
+              parent="menu_fashion_config_stock_root"
+              action="fashion_product_family_action"
+              sequence="20"/>
+
+    <menuitem id="menu_store_distribution_profile_stock"
+              name="Distribution Profiles"
+              parent="menu_fashion_config_stock_root"
+              action="store_distribution_profile_action"
+              sequence="30"/>
+
+</odoo>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_reservation_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Título -->
+                        <div class="row mb-4">
+                            <div class="col-12 text-center">
+                                <h2>Comprobante de reserva</h2>
+                            </div>
+                        </div>
+
+                        <!-- Cabecera: datos de la reserva -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <td class="fw-bold" style="width: 40%;">Referencia:</td>
+                                        <td><span t-out="o.name">RES/0001</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Cliente:</td>
+                                        <td><span t-out="o.partner_id.name">Juan García</span></td>
+                                    </tr>
+                                    <tr t-if="o.partner_id.phone">
+                                        <td class="fw-bold">Teléfono:</td>
+                                        <td><span t-out="o.partner_id.phone">+34 612 345 678</span></td>
+                                    </tr>
+                                    <tr t-if="o.partner_id.email">
+                                        <td class="fw-bold">Email:</td>
+                                        <td><span t-out="o.partner_id.email">juan@ejemplo.es</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <td class="fw-bold" style="width: 45%;">Tienda:</td>
+                                        <td><span t-out="o.warehouse_id.name">Tienda Madrid Centro</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Fecha de reserva:</td>
+                                        <td><span t-out="o.date_reservation" t-options='{"widget": "datetime"}'>2026-04-12 10:00:00</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Válida hasta:</td>
+                                        <td>
+                                            <span t-out="o.date_expiry" t-options='{"widget": "datetime"}' style="font-weight: bold; color: #dc3545;">2026-04-19 10:00:00</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Estado:</td>
+                                        <td>
+                                            <span t-if="o.state == 'draft'">Borrador</span>
+                                            <span t-if="o.state == 'confirmed'" style="color: #28a745; font-weight: bold;">Confirmada</span>
+                                            <span t-if="o.state == 'done'">Convertida a venta</span>
+                                            <span t-if="o.state == 'cancelled'" style="color: #dc3545;">Cancelada</span>
+                                            <span t-if="o.state == 'expired'" style="color: #ffc107;">Expirada</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Atendido por:</td>
+                                        <td><span t-out="o.user_id.name">María López</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Código de barras de la referencia -->
+                        <div class="row mb-4 text-center">
+                            <div class="col-12">
+                                <img t-att-src="'/report/barcode/?barcode_type=Code128&amp;value=%s&amp;width=350&amp;height=50' % o.name"
+                                     alt="Código de barras"/>
+                                <br/>
+                                <small t-out="o.name">RES/0001</small>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de artículos reservados -->
+                        <table class="table table-bordered table-sm">
+                            <thead>
+                                <tr style="background-color: #2F5496; color: white;">
+                                    <th class="text-start" style="width: 10%;">#</th>
+                                    <th class="text-start" style="width: 50%;">Producto</th>
+                                    <th class="text-center" style="width: 15%;">Cantidad</th>
+                                    <th class="text-end" style="width: 25%;">Precio ref.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="line_num" t-value="0"/>
+                                <tr t-foreach="o.line_ids" t-as="line">
+                                    <t t-set="line_num" t-value="line_num + 1"/>
+                                    <td class="text-start"><span t-out="line_num">1</span></td>
+                                    <td class="text-start">
+                                        <strong t-out="line.product_id.display_name">Camiseta Azul - Talla M</strong>
+                                        <br/>
+                                        <small t-if="line.product_id.default_code" class="text-muted">
+                                            Ref: <span t-out="line.product_id.default_code">CAM-AZ-M</span>
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-out="line.product_qty">1.0</span>
+                                        <span t-out="line.product_uom_id.name">Unidades</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="line.price_unit"
+                                              t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}">29.90</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Notas -->
+                        <div t-if="o.note" class="row mt-4">
+                            <div class="col-12">
+                                <strong>Notas:</strong>
+                                <p t-out="o.note">El cliente pasará a recoger el viernes.</p>
+                            </div>
+                        </div>
+
+                        <!-- Pie de comprobante -->
+                        <div class="row mt-5">
+                            <div class="col-12 text-center">
+                                <hr/>
+                                <p class="text-muted" style="font-size: 0.85em;">
+                                    Este comprobante certifica que los artículos indicados han sido reservados
+                                    para el cliente hasta la fecha de expiración indicada. Pasada dicha fecha,
+                                    la reserva quedará automáticamente cancelada y los artículos volverán a
+                                    estar disponibles para la venta.
+                                </p>
+                                <p class="text-muted" style="font-size: 0.8em;">
+                                    Presente este comprobante en tienda para recoger sus artículos.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

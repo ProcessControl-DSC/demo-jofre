@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Add "Reservar" button next to the "Pay" button on the ProductScreen -->
+    <t t-name="pc_product_reservation.ProductScreen" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('pay-button')]" position="before">
+            <button class="btn btn-lg btn-warning text-white reserve-button py-3 w-100 mb-1"
+                t-on-click="() => this.onClickReserve()">
+                <i class="fa fa-bookmark me-2"/>
+                <span>Reservar</span>
+            </button>
+        </xpath>
+    </t>
+
+</templates>
