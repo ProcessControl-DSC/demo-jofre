@@ -26,7 +26,7 @@
                 <filter string="Fecha de reserva" name="date_reservation" date="date_reservation"/>
                 <filter string="Fecha de expiración" name="date_expiry" date="date_expiry"/>
 
-                <group expand="0" string="Agrupar por">
+                <group>
                     <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Tienda" name="group_warehouse" context="{'group_by': 'warehouse_id'}"/>
                     <filter string="Cliente" name="group_partner" context="{'group_by': 'partner_id'}"/>

@@ -134,7 +134,7 @@
                 <filter string="The New Black" name="filter_thenewblack"
                         domain="[('platform', '=', 'thenewblack')]"/>
                 <separator/>
-                <group expand="0" string="Agrupar por">
+                <group>
                     <filter string="Plataforma" name="group_platform"
                             context="{'group_by': 'platform'}"/>
                     <filter string="Estado" name="group_state"

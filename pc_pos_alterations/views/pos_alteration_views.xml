@@ -213,7 +213,7 @@
                 <separator/>
                 <filter string="Mi tienda" name="filter_my_store"
                         domain="[('warehouse_id.company_id', 'in', allowed_company_ids)]"/>
-                <group expand="0" string="Agrupar por">
+                <group>
                     <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Tienda" name="group_warehouse" context="{'group_by': 'warehouse_id'}"/>
                     <filter string="Tipo de arreglo" name="group_type" context="{'group_by': 'alteration_type_id'}"/>
