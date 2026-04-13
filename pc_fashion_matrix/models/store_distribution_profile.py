@@ -67,14 +67,12 @@ class StoreDistributionProfileLine(models.Model):
         help='Percentage of the total quantity allocated to this store',
     )
 
-    _sql_constraints = [
-        (
-            'percentage_positive',
+    _constraints = [
+        models.Constraint(
             'CHECK(percentage > 0)',
             'The percentage must be greater than zero.',
         ),
-        (
-            'warehouse_profile_unique',
+        models.Constraint(
             'UNIQUE(profile_id, warehouse_id)',
             'Each warehouse can only appear once per profile.',
         ),

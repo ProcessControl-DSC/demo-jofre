@@ -31,14 +31,12 @@ class FashionSeason(models.Model):
         default=True,
     )
 
-    _sql_constraints = [
-        (
-            'code_unique',
+    _constraints = [
+        models.Constraint(
             'UNIQUE(code)',
             'The season code must be unique.',
         ),
-        (
-            'date_check',
+        models.Constraint(
             'CHECK(date_end >= date_start)',
             'The end date must be after the start date.',
         ),

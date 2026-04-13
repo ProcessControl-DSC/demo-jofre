@@ -23,8 +23,11 @@ class AlterationType(models.Model):
     description = fields.Text(string='Descripción')
     active = fields.Boolean(string='Activo', default=True)
 
-    _sql_constraints = [
-        ('code_uniq', 'unique(code)', 'El código del tipo de arreglo debe ser único.'),
+    _constraints = [
+        models.Constraint(
+            'UNIQUE(code)',
+            'El código del tipo de arreglo debe ser único.',
+        ),
     ]
 
     @api.model

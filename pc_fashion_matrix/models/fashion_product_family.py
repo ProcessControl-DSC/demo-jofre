@@ -23,9 +23,8 @@ class FashionProductFamily(models.Model):
         default=True,
     )
 
-    _sql_constraints = [
-        (
-            'code_unique',
+    _constraints = [
+        models.Constraint(
             'UNIQUE(code)',
             'The family code must be unique.',
         ),
