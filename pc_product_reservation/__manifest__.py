@@ -37,7 +37,7 @@
             'pc_product_reservation/static/src/scss/**/*.scss',
         ],
     },
-    'post_init_hook': '_create_reservation_locations',
+    
     'installable': True,
     'auto_install': False,
 }

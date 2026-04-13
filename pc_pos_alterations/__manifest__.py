@@ -38,7 +38,7 @@ y descuento del 100% vía tarifa, con seguimiento en taller.
             'pc_pos_alterations/static/src/scss/**/*.scss',
         ],
     },
-    'post_init_hook': '_create_workshop_locations',
+    
     'installable': True,
     'auto_install': False,
 }
