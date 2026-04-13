@@ -14,26 +14,15 @@
                 <field name="partner_id" string="Cliente"/>
                 <field name="warehouse_id" string="Tienda"/>
                 <field name="user_id" string="Responsable"/>
-                <field name="line_ids" string="Producto" filter_domain="[('line_ids.product_id.name', 'ilike', self)]"/>
-
                 <filter string="Mis reservas" name="my_reservations" domain="[('user_id', '=', uid)]"/>
                 <separator/>
-                <filter string="Activas" name="active_reservations" domain="[('state', 'in', ('draft', 'confirmed'))]"/>
+                <filter string="Activas" name="active_reservations" domain="[('state', 'in', ['draft', 'confirmed'])]"/>
                 <filter string="Confirmadas" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
                 <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
                 <filter string="Expiradas" name="expired" domain="[('state', '=', 'expired')]"/>
                 <filter string="Cobradas" name="done" domain="[('state', '=', 'done')]"/>
                 <filter string="Canceladas" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
                 <separator/>
-                <filter string="Próximas a expirar (48h)" name="expiring_soon"
-                    domain="[
-                        ('state', '=', 'confirmed'),
-                        ('date_expiry', '&lt;=', (context_today() + datetime.timedelta(days=2)).strftime('%Y-%m-%d 23:59:59')),
-                        ('date_expiry', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
-                    ]"/>
-                <separator/>
-                <filter string="Esta semana" name="this_week"
-                    domain="[('date_reservation', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d 00:00:00'))]"/>
                 <filter string="Fecha de reserva" name="date_reservation" date="date_reservation"/>
                 <filter string="Fecha de expiración" name="date_expiry" date="date_expiry"/>
 
