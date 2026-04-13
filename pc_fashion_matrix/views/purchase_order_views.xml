@@ -17,6 +17,14 @@
                         confirm="This will create internal transfers to distribute stock to stores based on the selected profile. Continue?"/>
             </xpath>
 
+            <!-- Filter products by supplier on order lines -->
+            <xpath expr="//field[@name='order_line']//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('purchase_ok', '=', True), ('seller_ids.partner_id', '=', parent.partner_id)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='order_line']//field[@name='product_template_id']" position="attributes">
+                <attribute name="domain">[('purchase_ok', '=', True), ('seller_ids.partner_id', '=', parent.partner_id)]</attribute>
+            </xpath>
+
             <!-- Add fashion fields in a new tab before delivery/invoice -->
             <xpath expr="//page[@name='purchase_delivery_invoice']" position="before">
                 <page string="Fashion" name="fashion_info">
