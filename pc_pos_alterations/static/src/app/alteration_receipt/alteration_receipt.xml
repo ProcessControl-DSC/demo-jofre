@@ -44,7 +44,7 @@
             </div>
 
             <!-- Tipo arreglo -->
-            <div class="mb-1">
+            <div class="mb-1" t-if="props.alteration.alteration_type">
                 <span class="fw-bold">Tipo: </span>
                 <span t-esc="props.alteration.alteration_type"/>
             </div>
@@ -55,11 +55,10 @@
                 <span t-esc="props.alteration.description"/>
             </div>
 
-            <!-- Coste -->
+            <!-- Estado -->
             <div class="mb-1">
-                <span class="fw-bold">Valor: </span>
-                <span t-esc="formattedCost"/> EUR
-                <span class="ms-1">(Cortesía)</span>
+                <span class="fw-bold">Estado: </span>
+                <span t-esc="stateLabel"/>
             </div>
 
             <div style="border-top: 1px solid #000;" class="my-2"/>

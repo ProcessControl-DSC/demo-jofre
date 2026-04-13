@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ====== Extend repair.order form to show POS alteration fields ====== -->
+    <record id="repair_order_view_form_inherit" model="ir.ui.view">
+        <field name="name">repair.order.form.pc_pos_alterations</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Añadir campos de arreglo en la sección principal -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="alteration_type_id"/>
+                <field name="delivery_method"/>
+            </xpath>
+            <!-- Añadir enlace al pedido TPV -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button type="object" name="action_view_pos_order"
+                        class="oe_stat_button" icon="fa-shopping-cart"
+                        invisible="not pos_order_id">
+                    <span>Pedido TPV</span>
+                </button>
+            </xpath>
+            <!-- Campos ocultos necesarios -->
+            <xpath expr="//sheet" position="inside">
+                <field name="pos_order_id" invisible="1"/>
+                <field name="pos_order_line_id" invisible="1"/>
+                <field name="alteration_line_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ====== Extend repair.order list to show alteration type ====== -->
+    <record id="repair_order_view_list_inherit" model="ir.ui.view">
+        <field name="name">repair.order.list.pc_pos_alterations</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="alteration_type_id" optional="show"/>
+                <field name="delivery_method" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ====== Extend repair.order search to add alteration filters ====== -->
+    <record id="repair_order_view_search_inherit" model="ir.ui.view">
+        <field name="name">repair.order.search.pc_pos_alterations</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="alteration_type_id"/>
+                <separator/>
+                <filter string="Arreglos TPV" name="filter_pos_alterations"
+                        domain="[('pos_order_id', '!=', False)]"/>
+                <filter string="Recogida en tienda" name="filter_pickup"
+                        domain="[('delivery_method', '=', 'pickup_store')]"/>
+                <filter string="Envío a domicilio" name="filter_ship"
+                        domain="[('delivery_method', '=', 'ship_customer')]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

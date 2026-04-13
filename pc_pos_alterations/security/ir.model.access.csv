@@ -1,7 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_alteration_type_user,alteration.type.user,model_alteration_type,group_alteration_user,1,0,0,0
 access_alteration_type_manager,alteration.type.manager,model_alteration_type,group_alteration_manager,1,1,1,1
-access_pos_alteration_user,pos.alteration.user,model_pos_alteration,group_alteration_user,1,1,1,0
-access_pos_alteration_manager,pos.alteration.manager,model_pos_alteration,group_alteration_manager,1,1,1,1
 access_alteration_type_pos_user,alteration.type.pos.user,model_alteration_type,point_of_sale.group_pos_user,1,0,0,0
-access_pos_alteration_pos_user,pos.alteration.pos.user,model_pos_alteration,point_of_sale.group_pos_user,1,1,1,0

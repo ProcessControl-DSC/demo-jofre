@@ -29,12 +29,14 @@ export class AlterationScreen extends Component {
         this.state.loading = true;
         try {
             let states = null;
-            if (this.state.activeFilter === "pending") {
-                states = ["pending"];
-            } else if (this.state.activeFilter === "in_progress") {
-                states = ["in_progress"];
-            } else if (this.state.activeFilter === "ready") {
-                states = ["ready"];
+            if (this.state.activeFilter === "draft") {
+                states = ["draft"];
+            } else if (this.state.activeFilter === "confirmed") {
+                states = ["confirmed"];
+            } else if (this.state.activeFilter === "under_repair") {
+                states = ["under_repair"];
+            } else if (this.state.activeFilter === "done") {
+                states = ["done"];
             }
             if (this.state.searchTerm) {
                 this.state.alterations = await this.pos.searchAlterations(
@@ -73,22 +75,22 @@ export class AlterationScreen extends Component {
 
     getStateBadgeClass(state) {
         const classes = {
-            pending: "bg-info",
-            in_progress: "bg-warning text-dark",
-            ready: "bg-success",
-            delivered: "bg-secondary",
-            cancelled: "bg-danger",
+            draft: "bg-info",
+            confirmed: "bg-primary",
+            under_repair: "bg-warning text-dark",
+            done: "bg-success",
+            cancel: "bg-danger",
         };
         return classes[state] || "bg-secondary";
     }
 
     getStateLabel(state) {
         const labels = {
-            pending: _t("Pendiente"),
-            in_progress: _t("En Curso"),
-            ready: _t("Listo"),
-            delivered: _t("Entregado"),
-            cancelled: _t("Cancelado"),
+            draft: _t("Borrador"),
+            confirmed: _t("Confirmada"),
+            under_repair: _t("En Curso"),
+            done: _t("Finalizada"),
+            cancel: _t("Cancelada"),
         };
         return labels[state] || state;
     }
@@ -103,65 +105,62 @@ export class AlterationScreen extends Component {
         return "";
     }
 
+    canConfirm(alteration) {
+        return alteration.state === "draft";
+    }
+
     canStart(alteration) {
-        return alteration.state === "pending";
+        return alteration.state === "confirmed";
     }
 
-    canReady(alteration) {
-        return alteration.state === "in_progress";
-    }
-
-    canDeliver(alteration) {
-        return alteration.state === "ready";
+    canEnd(alteration) {
+        return alteration.state === "under_repair";
     }
 
     canCancel(alteration) {
-        return ["pending", "in_progress", "ready"].includes(alteration.state);
+        return ["draft", "confirmed", "under_repair"].includes(alteration.state);
+    }
+
+    async onActionConfirm(alteration) {
+        try {
+            await this.pos.changeAlterationState(alteration.id, "confirm");
+            this.pos.notification.add(_t("Reparación %s confirmada", alteration.name), 3000);
+            await this.loadAlterations();
+        } catch (e) {
+            console.error("Error confirming repair:", e);
+        }
     }
 
     async onActionStart(alteration) {
         try {
-            await this.pos.changeAlterationState(alteration.id, "in_progress");
-            this.pos.notification.add(_t("Arreglo %s iniciado", alteration.name), 3000);
+            await this.pos.changeAlterationState(alteration.id, "start");
+            this.pos.notification.add(_t("Reparación %s iniciada", alteration.name), 3000);
             await this.loadAlterations();
         } catch (e) {
-            console.error("Error starting alteration:", e);
+            console.error("Error starting repair:", e);
         }
     }
 
-    async onActionReady(alteration) {
+    async onActionEnd(alteration) {
         try {
-            await this.pos.changeAlterationState(alteration.id, "ready");
+            await this.pos.changeAlterationState(alteration.id, "end");
             this.pos.notification.add(
-                _t("Arreglo %s listo para recoger", alteration.name),
+                _t("Reparación %s finalizada", alteration.name),
                 3000
             );
             await this.loadAlterations();
         } catch (e) {
-            console.error("Error marking ready:", e);
-        }
-    }
-
-    async onActionDeliver(alteration) {
-        try {
-            await this.pos.changeAlterationState(alteration.id, "delivered");
-            this.pos.notification.add(
-                _t("Arreglo %s entregado al cliente", alteration.name),
-                3000
-            );
-            await this.loadAlterations();
-        } catch (e) {
-            console.error("Error delivering:", e);
+            console.error("Error ending repair:", e);
         }
     }
 
     async onActionCancel(alteration) {
         try {
-            await this.pos.changeAlterationState(alteration.id, "cancelled");
-            this.pos.notification.add(_t("Arreglo %s cancelado", alteration.name), 3000);
+            await this.pos.changeAlterationState(alteration.id, "cancel");
+            this.pos.notification.add(_t("Reparación %s cancelada", alteration.name), 3000);
             await this.loadAlterations();
         } catch (e) {
-            console.error("Error cancelling:", e);
+            console.error("Error cancelling repair:", e);
         }
     }
 

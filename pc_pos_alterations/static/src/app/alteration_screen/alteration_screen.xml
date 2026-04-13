@@ -29,17 +29,21 @@
                         t-on-click="() => this.onFilterChange('all')">
                     Todos
                 </button>
-                <button t-attf-class="btn btn-sm {{ state.activeFilter === 'pending' ? 'btn-info' : 'btn-outline-secondary' }}"
-                        t-on-click="() => this.onFilterChange('pending')">
-                    <i class="fa fa-clock-o me-1"/>Pendientes
+                <button t-attf-class="btn btn-sm {{ state.activeFilter === 'draft' ? 'btn-info' : 'btn-outline-secondary' }}"
+                        t-on-click="() => this.onFilterChange('draft')">
+                    <i class="fa fa-file-o me-1"/>Borrador
                 </button>
-                <button t-attf-class="btn btn-sm {{ state.activeFilter === 'in_progress' ? 'btn-warning' : 'btn-outline-secondary' }}"
-                        t-on-click="() => this.onFilterChange('in_progress')">
+                <button t-attf-class="btn btn-sm {{ state.activeFilter === 'confirmed' ? 'btn-primary' : 'btn-outline-secondary' }}"
+                        t-on-click="() => this.onFilterChange('confirmed')">
+                    <i class="fa fa-check-circle me-1"/>Confirmadas
+                </button>
+                <button t-attf-class="btn btn-sm {{ state.activeFilter === 'under_repair' ? 'btn-warning' : 'btn-outline-secondary' }}"
+                        t-on-click="() => this.onFilterChange('under_repair')">
                     <i class="fa fa-cog fa-spin me-1"/>En Curso
                 </button>
-                <button t-attf-class="btn btn-sm {{ state.activeFilter === 'ready' ? 'btn-success' : 'btn-outline-secondary' }}"
-                        t-on-click="() => this.onFilterChange('ready')">
-                    <i class="fa fa-check me-1"/>Listos
+                <button t-attf-class="btn btn-sm {{ state.activeFilter === 'done' ? 'btn-success' : 'btn-outline-secondary' }}"
+                        t-on-click="() => this.onFilterChange('done')">
+                    <i class="fa fa-check me-1"/>Finalizadas
                 </button>
             </div>
 
@@ -85,11 +89,13 @@
                                             <t t-esc="alt.product_name"/>
                                         </div>
                                         <!-- Alteration type -->
-                                        <div class="mb-1">
-                                            <i class="fa fa-scissors me-1"/>
-                                            <t t-esc="alt.alteration_type_name"/>
-                                        </div>
-                                        <!-- Description -->
+                                        <t t-if="alt.alteration_type">
+                                            <div class="mb-1">
+                                                <i class="fa fa-scissors me-1"/>
+                                                <t t-esc="alt.alteration_type"/>
+                                            </div>
+                                        </t>
+                                        <!-- Description (HTML stripped for display) -->
                                         <t t-if="alt.description">
                                             <div class="mb-1 small fst-italic text-muted">
                                                 "<t t-esc="alt.description"/>"
@@ -97,7 +103,7 @@
                                         </t>
                                         <!-- Dates -->
                                         <div class="d-flex justify-content-between small mt-2">
-                                            <span class="text-muted">
+                                            <span t-attf-class="{{ alt.is_overdue ? 'text-danger fw-bold' : 'text-muted' }}">
                                                 <i class="fa fa-calendar me-1"/>
                                                 <t t-esc="alt.date_promised"/>
                                             </span>
@@ -108,30 +114,24 @@
                                                 </t>
                                             </span>
                                         </div>
-                                        <!-- Cost -->
-                                        <div class="mt-1 small">
-                                            <span class="text-muted">Valor: </span>
-                                            <span class="fw-bold"><t t-esc="alt.cost"/> EUR</span>
-                                            <span class="text-muted"> (cortesía)</span>
-                                        </div>
                                     </div>
                                     <div class="card-footer d-flex gap-1 py-2">
+                                        <t t-if="canConfirm(alt)">
+                                            <button class="btn btn-sm btn-info flex-fill"
+                                                    t-on-click="() => this.onActionConfirm(alt)">
+                                                <i class="fa fa-check-circle me-1"/>Confirmar
+                                            </button>
+                                        </t>
                                         <t t-if="canStart(alt)">
                                             <button class="btn btn-sm btn-warning flex-fill"
                                                     t-on-click="() => this.onActionStart(alt)">
                                                 <i class="fa fa-play me-1"/>Iniciar
                                             </button>
                                         </t>
-                                        <t t-if="canReady(alt)">
+                                        <t t-if="canEnd(alt)">
                                             <button class="btn btn-sm btn-success flex-fill"
-                                                    t-on-click="() => this.onActionReady(alt)">
-                                                <i class="fa fa-check me-1"/>Listo
-                                            </button>
-                                        </t>
-                                        <t t-if="canDeliver(alt)">
-                                            <button class="btn btn-sm btn-primary flex-fill"
-                                                    t-on-click="() => this.onActionDeliver(alt)">
-                                                <i class="fa fa-handshake-o me-1"/>Entregado
+                                                    t-on-click="() => this.onActionEnd(alt)">
+                                                <i class="fa fa-check me-1"/>Finalizar
                                             </button>
                                         </t>
                                         <t t-if="canCancel(alt)">

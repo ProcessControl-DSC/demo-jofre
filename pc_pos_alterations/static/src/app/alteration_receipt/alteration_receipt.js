@@ -36,8 +36,14 @@ export class AlterationReceipt extends Component {
         }
     }
 
-    get formattedCost() {
-        const cost = this.props.alteration.cost || 0;
-        return cost.toFixed(2);
+    get stateLabel() {
+        const labels = {
+            draft: "Borrador",
+            confirmed: "Confirmada",
+            under_repair: "En Curso",
+            done: "Finalizada",
+            cancel: "Cancelada",
+        };
+        return labels[this.props.alteration.state] || this.props.alteration.state;
     }
 }

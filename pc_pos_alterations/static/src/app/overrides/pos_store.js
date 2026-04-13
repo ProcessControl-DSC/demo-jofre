@@ -26,9 +26,9 @@ patch(PosStore.prototype, {
     },
 
     /**
-     * Obtiene los arreglos de la tienda actual.
+     * Obtiene los arreglos (repair.order) de la tienda actual.
      * @param {Array|null} states - Estados a filtrar
-     * @returns {Array} Lista de arreglos
+     * @returns {Array} Lista de reparaciones
      */
     async getAlterations(states) {
         const warehouseId = this.getWarehouseId();
@@ -36,8 +36,8 @@ patch(PosStore.prototype, {
             return [];
         }
         const result = await this.data.call(
-            "pos.alteration",
-            "get_alterations_for_pos",
+            "repair.order",
+            "get_repairs_for_pos",
             [warehouseId, states || false]
         );
         this.alterations = result;
@@ -45,24 +45,24 @@ patch(PosStore.prototype, {
     },
 
     /**
-     * Cambia el estado de un arreglo.
-     * @param {number} alterationId - ID del arreglo
-     * @param {string} newState - Nuevo estado
+     * Cambia el estado de una reparación.
+     * @param {number} repairId - ID de la reparación
+     * @param {string} action - Acción: 'confirm', 'start', 'end', 'cancel'
      * @returns {Object} Resultado
      */
-    async changeAlterationState(alterationId, newState) {
+    async changeAlterationState(repairId, action) {
         const result = await this.data.call(
-            "pos.alteration",
-            "change_state_from_pos",
-            [alterationId, newState]
+            "repair.order",
+            "change_repair_state_from_pos",
+            [repairId, action]
         );
         return result;
     },
 
     /**
-     * Busca arreglos por texto.
+     * Busca reparaciones por texto.
      * @param {string} searchTerm - Término de búsqueda
-     * @returns {Array} Arreglos encontrados
+     * @returns {Array} Reparaciones encontradas
      */
     async searchAlterations(searchTerm) {
         const warehouseId = this.getWarehouseId();
@@ -70,8 +70,8 @@ patch(PosStore.prototype, {
             return [];
         }
         const result = await this.data.call(
-            "pos.alteration",
-            "search_alterations_from_pos",
+            "repair.order",
+            "search_repairs_from_pos",
             [warehouseId, searchTerm]
         );
         return result;
