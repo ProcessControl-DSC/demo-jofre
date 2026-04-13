@@ -207,12 +207,12 @@
                 <separator/>
                 <filter string="Vencidos" name="filter_overdue"
                         domain="[('is_overdue', '=', True)]"/>
-                <filter string="Esta semana" name="filter_this_week"
-                        domain="[('date_promised', '>=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')),
-                                 ('date_promised', '&lt;', (context_today() + datetime.timedelta(days=7-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter string="Próximos 7 días" name="filter_this_week"
+                        domain="[('date_promised', '&gt;=', 'today'),
+                                 ('date_promised', '&lt;', 'today +8d')]"/>
                 <separator/>
                 <filter string="Mi tienda" name="filter_my_store"
-                        domain="[('warehouse_id.company_id', '=', allowed_company_ids[0])]"/>
+                        domain="[('warehouse_id.company_id', 'in', allowed_company_ids)]"/>
                 <group expand="0" string="Agrupar por">
                     <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Tienda" name="group_warehouse" context="{'group_by': 'warehouse_id'}"/>
