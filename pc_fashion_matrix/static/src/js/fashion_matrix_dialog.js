@@ -107,11 +107,12 @@ export class FashionMatrixAction extends Component {
     async _loadProducts() {
         this.state.loadingProducts = true;
 
-        // Build domain to find fashion products
+        // Build domain: products with at least 2 attribute lines (size + color)
         const domain = [
-            ["attribute_line_ids", "!=", false],
+            ["product_variant_count", ">", 1],
         ];
 
+        // Try supplier filter first, fallback to all products if no results
         if (this.state.partnerId) {
             domain.push(["seller_ids.partner_id", "=", this.state.partnerId]);
         }
@@ -122,12 +123,22 @@ export class FashionMatrixAction extends Component {
             domain.push(["fashion_gender", "=", this.state.gender]);
         }
 
-        const templateIds = await this.orm.searchRead(
+        let templateIds = await this.orm.searchRead(
             "product.template",
             domain,
             ["id", "name", "default_code", "list_price", "image_128"],
             { limit: 200, order: "name asc" },
         );
+
+        // Fallback: if no products found with filters, show all products with variants
+        if (templateIds.length === 0) {
+            templateIds = await this.orm.searchRead(
+                "product.template",
+                [["product_variant_count", ">", 1]],
+                ["id", "name", "default_code", "list_price", "image_128"],
+                { limit: 200, order: "name asc" },
+            );
+        }
 
         this.state.products = templateIds;
 
