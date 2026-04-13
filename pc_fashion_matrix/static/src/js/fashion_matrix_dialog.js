@@ -1,76 +1,70 @@
 /** @odoo-module **/
 
-import { Component, useState, onWillStart, onMounted, useRef } from "@odoo/owl";
-import { registry } from "@web/core/registry";
+import { Component, useState, onMounted, onWillStart, useRef } from "@odoo/owl";
+import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
-import { _t } from "@web/core/l10n/translation";
-import { standardActionServiceProps } from "@web/webclient/actions/action_service";
-import { distributeHund, distributeMatrixToStores } from
-    "@pc_fashion_matrix/js/fashion_matrix_distribution";
-
+import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 
 /**
- * FashionMatrixAction
+ * FashionMatrixDialog
  *
- * Full-screen client action that renders the enhanced fashion product matrix.
- * Provides a Le New Black-inspired B2B ordering interface with:
- *   - Product image gallery (left panel)
- *   - Color swatches, size x color grid, totals (right panel)
- *   - Store distribution sub-grid (collapsible)
+ * Enhanced product matrix dialog that replaces the standard ProductMatrixDialog
+ * when a product has fashion attributes (Color + Size).
+ *
+ * Layout:
+ *   - Left panel (~40%): Large product image with gallery navigation
+ *   - Right panel (~60%): Product info, color swatches, size x color grid
+ *     with quantity inputs, row/column/grand totals
+ *
+ * Data flow:
+ *   Receives the same props as ProductMatrixDialog (header, rows, etc.)
+ *   plus additional fashion data fetched via RPC (get_fashion_matrix_data).
+ *   On confirm, writes back to the record using the standard grid/grid_update
+ *   mechanism so the server creates order lines normally.
  */
-export class FashionMatrixAction extends Component {
-    static template = "pc_fashion_matrix.FashionMatrixAction";
-    static props = { ...standardActionServiceProps };
+export class FashionMatrixDialog extends Component {
+    static template = "pc_fashion_matrix.FashionMatrixDialog";
+    static props = {
+        header: { type: Object },
+        rows: { type: Object },
+        editedCellAttributes: { type: String },
+        product_template_id: { type: Number },
+        record: { type: Object },
+        close: { type: Function },
+    };
+    static components = { Dialog };
 
     setup() {
         this.orm = useService("orm");
-        this.action = useService("action");
-        this.notification = useService("notification");
+        this.size = "fullscreen";
 
-        this.gridRef = useRef("gridContainer");
+        this.matrixRef = useRef("fashionMatrix");
 
         this.state = useState({
-            // Loading states
             loading: true,
-            loadingProducts: false,
-
-            // Product data
+            // Fashion data from RPC
             product: null,
-            products: [],
-            currentProductIndex: 0,
-
             // Image gallery
             currentImageIndex: 0,
-
-            // Matrix quantities: {colorId_sizeId: qty}
-            quantities: {},
-
             // Active color filter (null = show all)
             activeColorId: null,
+            // Quantities: { "colorId_sizeId": qty }
+            quantities: {},
+        });
 
-            // Distribution
-            showDistribution: false,
-            distributionProfiles: [],
-            selectedProfileId: null,
-            storeDistribution: {},
+        // Parse the standard matrix rows to build our initial quantities
+        this._parseMatrixRows();
 
-            // Purchase order context
-            purchaseOrderId: null,
-            seasonId: null,
-            gender: null,
-            partnerId: null,
-            distributionProfileId: null,
-
-            // Products search / filter
-            searchQuery: "",
+        useHotkey("enter", () => this._onConfirm(), {
+            bypassEditableProtection: true,
+            area: () => this.matrixRef.el,
         });
 
         onWillStart(async () => {
-            await this._loadInitialData();
+            await this._loadFashionData();
         });
 
         onMounted(() => {
-            // Focus first input if grid is visible
             this._focusFirstInput();
         });
     }
@@ -79,146 +73,78 @@ export class FashionMatrixAction extends Component {
     // DATA LOADING
     // -------------------------------------------------------------------------
 
-    async _loadInitialData() {
-        const params = this.props.action.params || {};
-        this.state.purchaseOrderId = params.purchase_order_id || null;
-        this.state.seasonId = params.season_id || null;
-        this.state.gender = params.gender || null;
-        this.state.partnerId = params.partner_id || null;
-        this.state.distributionProfileId = params.distribution_profile_id || null;
-
-        // Load distribution profiles
-        this.state.distributionProfiles = await this.orm.call(
-            "product.template",
-            "get_distribution_profiles",
-            [],
-        );
-
-        if (this.state.distributionProfileId) {
-            this.state.selectedProfileId = this.state.distributionProfileId;
-        }
-
-        // Load products for this supplier/season/gender combination
-        await this._loadProducts();
-
-        this.state.loading = false;
+    /**
+     * Parse the standard Odoo matrix rows to extract initial quantities.
+     * The standard matrix structure is:
+     *   rows = [ [rowHeader, cell1, cell2, ...], ... ]
+     * Each cell has: { ptav_ids, qty, is_possible_combination, ... }
+     */
+    _parseMatrixRows() {
+        // We do not pre-fill from standard rows here; we will build our own
+        // grid from fashion data. The standard rows are kept for the confirm
+        // action which writes back using ptav_ids.
+        this._standardRows = this.props.rows;
+        this._standardHeader = this.props.header;
     }
 
-    async _loadProducts() {
-        this.state.loadingProducts = true;
-
-        // Build domain: products with at least 2 attribute lines (size + color)
-        const domain = [
-            ["product_variant_count", ">", 1],
-        ];
-
-        // Try supplier filter first, fallback to all products if no results
-        if (this.state.partnerId) {
-            domain.push(["seller_ids.partner_id", "=", this.state.partnerId]);
+    /**
+     * Cross-reference the standard matrix data with fashion data to
+     * pre-fill quantities that were already on the order.
+     */
+    _initQuantitiesFromMatrix(fashionData) {
+        if (!fashionData || !fashionData.colors || !fashionData.sizes) {
+            return;
         }
-        if (this.state.seasonId) {
-            domain.push(["fashion_season_id", "=", this.state.seasonId]);
-        }
-        if (this.state.gender) {
-            domain.push(["fashion_gender", "=", this.state.gender]);
+        // Initialize all cells to 0
+        for (const color of fashionData.colors) {
+            for (const size of fashionData.sizes) {
+                const key = `${color.id}_${size.id}`;
+                this.state.quantities[key] = 0;
+            }
         }
 
-        let templateIds = await this.orm.searchRead(
-            "product.template",
-            domain,
-            ["id", "name", "default_code", "list_price", "image_128"],
-            { limit: 200, order: "name asc" },
-        );
+        // Try to map standard matrix quantities to our color/size grid
+        // The standard matrix cells have ptav_ids (product template attribute value ids)
+        // We need to map those to our color.id / size.id (product attribute value ids)
+        // Build a reverse map: ptav_ids string -> {colorId, sizeId}
+        if (!this._standardRows) return;
 
-        // Fallback: if no products found with filters, show all products with variants
-        if (templateIds.length === 0) {
-            templateIds = await this.orm.searchRead(
-                "product.template",
-                [["product_variant_count", ">", 1]],
-                ["id", "name", "default_code", "list_price", "image_128"],
-                { limit: 200, order: "name asc" },
-            );
-        }
-
-        this.state.products = templateIds;
-
-        // Load first product if available
-        if (this.state.products.length > 0) {
-            await this._loadProductDetail(this.state.products[0].id);
-            this.state.currentProductIndex = 0;
-        }
-
-        this.state.loadingProducts = false;
-    }
-
-    async _loadProductDetail(productTemplateId) {
-        this.state.loading = true;
-        const data = await this.orm.call(
-            "product.template",
-            "get_fashion_matrix_data",
-            [productTemplateId],
-        );
-        this.state.product = data;
-        this.state.currentImageIndex = 0;
-        this.state.activeColorId = null;
-        // Reset quantities for this product
-        this.state.quantities = {};
-        if (data.colors && data.sizes) {
-            for (const color of data.colors) {
-                for (const size of data.sizes) {
-                    const key = `${color.id}_${size.id}`;
-                    this.state.quantities[key] = 0;
+        // Build ptav -> attribute value mapping from variant_map
+        // variant_map keys are "colorValId_sizeValId" -> { product_id, ... }
+        // We need to also map ptav_ids from the matrix to color/size value ids.
+        // The standard matrix cells contain ptav_ids as comma-separated template attr value ids.
+        // We'll match by iterating standard rows and extracting qty for each cell.
+        for (const row of this._standardRows) {
+            for (const cell of row) {
+                if (cell.ptav_ids && cell.is_possible_combination && cell.qty) {
+                    const qty = parseFloat(cell.qty) || 0;
+                    if (qty > 0) {
+                        // Try to find matching color/size from the fashion data variant map
+                        const ptavIds = cell.ptav_ids.split(",").map(id => parseInt(id)).sort((a, b) => a - b);
+                        const matchKey = this._findVariantByPtavIds(fashionData, ptavIds);
+                        if (matchKey) {
+                            this.state.quantities[matchKey] = qty;
+                        }
+                    }
                 }
             }
         }
-        // Recalculate distribution
-        this._recalculateDistribution();
-        this.state.loading = false;
     }
 
-    // -------------------------------------------------------------------------
-    // PRODUCT NAVIGATION
-    // -------------------------------------------------------------------------
-
-    get filteredProducts() {
-        if (!this.state.searchQuery) {
-            return this.state.products;
-        }
-        const query = this.state.searchQuery.toLowerCase();
-        return this.state.products.filter(p =>
-            (p.name || "").toLowerCase().includes(query) ||
-            (p.default_code || "").toLowerCase().includes(query)
-        );
-    }
-
-    async onSelectProduct(productId) {
-        const idx = this.state.products.findIndex(p => p.id === productId);
-        if (idx >= 0) {
-            this.state.currentProductIndex = idx;
-            await this._loadProductDetail(productId);
-        }
-    }
-
-    async onNextProduct() {
-        if (this.state.currentProductIndex < this.state.products.length - 1) {
-            this.state.currentProductIndex++;
-            await this._loadProductDetail(
-                this.state.products[this.state.currentProductIndex].id
-            );
-        }
-    }
-
-    async onPrevProduct() {
-        if (this.state.currentProductIndex > 0) {
-            this.state.currentProductIndex--;
-            await this._loadProductDetail(
-                this.state.products[this.state.currentProductIndex].id
-            );
-        }
-    }
-
-    onSearchProducts(ev) {
-        this.state.searchQuery = ev.target.value;
+    /**
+     * Find the color_size key that matches the given ptav_ids.
+     * This requires matching product template attribute value ids back
+     * to product attribute value ids via the variant map.
+     */
+    _findVariantByPtavIds(fashionData, ptavIds) {
+        // We will brute-force match: for each variant in variant_map,
+        // get the product.product, and compare its ptav_ids.
+        // Since we don't have ptav data directly, we'll store a lookup
+        // built during _loadFashionData.
+        // For now, the simplest approach: if quantities were 0 (new line),
+        // we don't need to pre-fill. If editing, the matrix already has qtys.
+        // This is a best-effort match.
+        return null;
     }
 
     // -------------------------------------------------------------------------
@@ -227,22 +153,27 @@ export class FashionMatrixAction extends Component {
 
     get currentImage() {
         const p = this.state.product;
-        if (!p || !p.images || p.images.length === 0) {
-            return null;
-        }
+        if (!p || !p.images || p.images.length === 0) return null;
         return p.images[this.state.currentImageIndex] || p.images[0];
     }
 
+    get hasMultipleImages() {
+        return this.state.product && this.state.product.images && this.state.product.images.length > 1;
+    }
+
     onPrevImage() {
+        const images = this.state.product ? this.state.product.images : [];
+        if (images.length <= 1) return;
         if (this.state.currentImageIndex > 0) {
             this.state.currentImageIndex--;
-        } else if (this.state.product && this.state.product.images) {
-            this.state.currentImageIndex = this.state.product.images.length - 1;
+        } else {
+            this.state.currentImageIndex = images.length - 1;
         }
     }
 
     onNextImage() {
         const images = this.state.product ? this.state.product.images : [];
+        if (images.length <= 1) return;
         if (this.state.currentImageIndex < images.length - 1) {
             this.state.currentImageIndex++;
         } else {
@@ -260,7 +191,7 @@ export class FashionMatrixAction extends Component {
 
     onSelectColor(colorId) {
         if (this.state.activeColorId === colorId) {
-            this.state.activeColorId = null; // Toggle off
+            this.state.activeColorId = null;
         } else {
             this.state.activeColorId = colorId;
         }
@@ -280,15 +211,13 @@ export class FashionMatrixAction extends Component {
     // -------------------------------------------------------------------------
 
     getQty(colorId, sizeId) {
-        const key = `${colorId}_${sizeId}`;
-        return this.state.quantities[key] || 0;
+        return this.state.quantities[`${colorId}_${sizeId}`] || 0;
     }
 
     onQtyChange(colorId, sizeId, ev) {
         const key = `${colorId}_${sizeId}`;
         const val = parseInt(ev.target.value, 10);
         this.state.quantities[key] = isNaN(val) || val < 0 ? 0 : val;
-        this._recalculateDistribution();
     }
 
     onQtyKeydown(colorId, sizeId, ev) {
@@ -299,18 +228,13 @@ export class FashionMatrixAction extends Component {
             ev.preventDefault();
             this.state.quantities[key] = current + 1;
             ev.target.value = this.state.quantities[key];
-            this._recalculateDistribution();
         } else if (ev.key === "ArrowDown") {
             ev.preventDefault();
             this.state.quantities[key] = Math.max(0, current - 1);
             ev.target.value = this.state.quantities[key];
-            this._recalculateDistribution();
-        } else if (ev.key === "Tab" || ev.key === "Enter") {
-            // Allow default tab behavior for grid navigation
         }
     }
 
-    // Row total (sum for a color across all sizes)
     getRowTotal(colorId) {
         const p = this.state.product;
         if (!p || !p.sizes) return 0;
@@ -321,7 +245,6 @@ export class FashionMatrixAction extends Component {
         return total;
     }
 
-    // Column total (sum for a size across all visible colors)
     getColTotal(sizeId) {
         let total = 0;
         for (const color of this.visibleColors) {
@@ -330,7 +253,6 @@ export class FashionMatrixAction extends Component {
         return total;
     }
 
-    // Grand total units
     get grandTotalUnits() {
         const p = this.state.product;
         if (!p) return 0;
@@ -341,248 +263,41 @@ export class FashionMatrixAction extends Component {
         return total;
     }
 
-    // Grand total at list price (PVP)
     get grandTotalPVP() {
         const p = this.state.product;
         if (!p) return 0;
         return this.grandTotalUnits * (p.list_price || 0);
     }
 
-    // Grand total at cost price
     get grandTotalCost() {
         const p = this.state.product;
         if (!p) return 0;
-        const costPrice = p.seller_price || p.standard_price || 0;
-        return this.grandTotalUnits * costPrice;
+        return this.grandTotalUnits * this.costPrice;
     }
 
-    // Margin percentage
+    get costPrice() {
+        const p = this.state.product;
+        if (!p) return 0;
+        return p.seller_price || p.standard_price || 0;
+    }
+
     get marginPercent() {
         if (this.grandTotalPVP === 0) return 0;
         return ((this.grandTotalPVP - this.grandTotalCost) / this.grandTotalPVP) * 100;
     }
 
-    // Format currency
-    formatCurrency(value) {
+    get marginClass() {
+        const m = this.marginPercent;
+        if (m >= 50) return "text-success fw-bold";
+        if (m >= 30) return "text-primary";
+        if (m >= 15) return "text-warning";
+        return "text-danger fw-bold";
+    }
+
+    get unitMarginPercent() {
         const p = this.state.product;
-        if (!p) return value.toFixed(2);
-        const symbol = p.currency_symbol || "\u20ac";
-        const position = p.currency_position || "after";
-        const formatted = value.toFixed(2);
-        if (position === "before") {
-            return `${symbol}${formatted}`;
-        }
-        return `${formatted} ${symbol}`;
-    }
-
-    // -------------------------------------------------------------------------
-    // STORE DISTRIBUTION
-    // -------------------------------------------------------------------------
-
-    toggleDistribution() {
-        this.state.showDistribution = !this.state.showDistribution;
-        if (this.state.showDistribution) {
-            this._recalculateDistribution();
-        }
-    }
-
-    onSelectProfile(ev) {
-        const profileId = parseInt(ev.target.value, 10);
-        this.state.selectedProfileId = profileId || null;
-        this._recalculateDistribution();
-    }
-
-    get selectedProfile() {
-        if (!this.state.selectedProfileId) return null;
-        return this.state.distributionProfiles.find(
-            p => p.id === this.state.selectedProfileId
-        ) || null;
-    }
-
-    _recalculateDistribution() {
-        const profile = this.selectedProfile;
-        if (!profile || !this.state.product) {
-            this.state.storeDistribution = {};
-            return;
-        }
-
-        // Build matrix quantities as {colorId: {sizeId: qty}}
-        const matrixQtys = {};
-        const p = this.state.product;
-        for (const color of (p.colors || [])) {
-            matrixQtys[color.id] = {};
-            for (const size of (p.sizes || [])) {
-                matrixQtys[color.id][size.id] = this.getQty(color.id, size.id);
-            }
-        }
-
-        const storePercentages = profile.lines.map(l => ({
-            warehouseId: l.warehouse_id,
-            warehouseName: l.warehouse_name,
-            percentage: l.percentage,
-        }));
-
-        this.state.storeDistribution = distributeMatrixToStores(
-            matrixQtys, storePercentages
-        );
-    }
-
-    getStoreQty(warehouseId, colorId, sizeId) {
-        const dist = this.state.storeDistribution;
-        if (!dist || !dist[warehouseId] || !dist[warehouseId][colorId]) return 0;
-        return dist[warehouseId][colorId][sizeId] || 0;
-    }
-
-    getStoreTotalForSize(warehouseId, sizeId) {
-        const profile = this.selectedProfile;
-        if (!profile || !this.state.product) return 0;
-        let total = 0;
-        for (const color of (this.state.product.colors || [])) {
-            total += this.getStoreQty(warehouseId, color.id, sizeId);
-        }
-        return total;
-    }
-
-    getStoreTotalForColor(warehouseId, colorId) {
-        const profile = this.selectedProfile;
-        if (!profile || !this.state.product) return 0;
-        let total = 0;
-        for (const size of (this.state.product.sizes || [])) {
-            total += this.getStoreQty(warehouseId, colorId, size.id);
-        }
-        return total;
-    }
-
-    getStoreGrandTotal(warehouseId) {
-        const profile = this.selectedProfile;
-        if (!profile || !this.state.product) return 0;
-        let total = 0;
-        for (const color of (this.state.product.colors || [])) {
-            for (const size of (this.state.product.sizes || [])) {
-                total += this.getStoreQty(warehouseId, color.id, size.id);
-            }
-        }
-        return total;
-    }
-
-    // -------------------------------------------------------------------------
-    // ACTIONS
-    // -------------------------------------------------------------------------
-
-    async onConfirm() {
-        const p = this.state.product;
-        if (!p || this.grandTotalUnits === 0) {
-            this.notification.add(
-                _t("Please enter quantities before confirming."),
-                { type: "warning" }
-            );
-            return;
-        }
-
-        if (!this.state.purchaseOrderId) {
-            this.notification.add(
-                _t("No purchase order context. Cannot add lines."),
-                { type: "danger" }
-            );
-            return;
-        }
-
-        // Build order lines from the matrix
-        const linesToCreate = [];
-        for (const color of p.colors) {
-            for (const size of p.sizes) {
-                const qty = this.getQty(color.id, size.id);
-                if (qty > 0) {
-                    const variantKey = `${color.id}_${size.id}`;
-                    const variantInfo = p.variant_map[variantKey];
-                    if (variantInfo) {
-                        linesToCreate.push({
-                            product_id: variantInfo.product_id,
-                            product_qty: qty,
-                        });
-                    }
-                }
-            }
-        }
-
-        if (linesToCreate.length === 0) {
-            this.notification.add(
-                _t("No valid product variants found for the entered quantities."),
-                { type: "warning" }
-            );
-            return;
-        }
-
-        // Call server method to add lines to the PO
-        try {
-            await this.orm.call(
-                "purchase.order",
-                "action_fashion_matrix_add_lines",
-                [this.state.purchaseOrderId, linesToCreate],
-            );
-            this.notification.add(
-                _t("%s lines added to the purchase order.", linesToCreate.length),
-                { type: "success" }
-            );
-
-            // Move to next product or go back
-            if (this.state.currentProductIndex < this.state.products.length - 1) {
-                await this.onNextProduct();
-            } else {
-                this.onGoBack();
-            }
-        } catch (error) {
-            this.notification.add(
-                _t("Error adding lines: ") + (error.message || error.data?.message || "Unknown error"),
-                { type: "danger" }
-            );
-        }
-    }
-
-    onSkip() {
-        if (this.state.currentProductIndex < this.state.products.length - 1) {
-            this.onNextProduct();
-        } else {
-            this.onGoBack();
-        }
-    }
-
-    onGoBack() {
-        if (this.state.purchaseOrderId) {
-            this.action.doAction({
-                type: "ir.actions.act_window",
-                res_model: "purchase.order",
-                res_id: this.state.purchaseOrderId,
-                views: [[false, "form"]],
-                target: "current",
-            });
-        } else {
-            this.action.doAction({ type: "ir.actions.act_window_close" });
-        }
-    }
-
-    onClearAll() {
-        for (const key of Object.keys(this.state.quantities)) {
-            this.state.quantities[key] = 0;
-        }
-        this._recalculateDistribution();
-    }
-
-    // -------------------------------------------------------------------------
-    // HELPERS
-    // -------------------------------------------------------------------------
-
-    _focusFirstInput() {
-        const container = this.gridRef.el;
-        if (container) {
-            const firstInput = container.querySelector(
-                ".o_fashion_matrix_cell input"
-            );
-            if (firstInput) {
-                firstInput.focus();
-                firstInput.select();
-            }
-        }
+        if (!p || !p.list_price) return 0;
+        return ((p.list_price - this.costPrice) / p.list_price * 100);
     }
 
     get genderBadgeClass() {
@@ -598,34 +313,267 @@ export class FashionMatrixAction extends Component {
         return map[g] || "bg-secondary";
     }
 
-    get costPrice() {
+    formatCurrency(value) {
         const p = this.state.product;
-        if (!p) return 0;
-        return p.seller_price || p.standard_price || 0;
+        if (!p) return value.toFixed(2);
+        const symbol = p.currency_symbol || "\u20ac";
+        const position = p.currency_position || "after";
+        const formatted = value.toFixed(2);
+        if (position === "before") {
+            return `${symbol}${formatted}`;
+        }
+        return `${formatted} ${symbol}`;
     }
 
-    get marginClass() {
-        const m = this.marginPercent;
-        if (m >= 50) return "text-success fw-bold";
-        if (m >= 30) return "text-primary";
-        if (m >= 15) return "text-warning";
-        return "text-danger fw-bold";
+    // -------------------------------------------------------------------------
+    // ACTIONS
+    // -------------------------------------------------------------------------
+
+    /**
+     * Confirm: Build the matrix changes in the standard Odoo format
+     * (ptav_ids + qty) and write them back to the record using grid/grid_update.
+     * This ensures full compatibility with the standard purchase/sale matrix flow.
+     */
+    _onConfirm() {
+        const p = this.state.product;
+        if (!p || !p.variant_map) {
+            this.props.close();
+            return;
+        }
+
+        const matrixChanges = [];
+
+        // For each cell with quantity > 0, find the matching ptav_ids
+        // from the standard matrix rows
+        for (const color of (p.colors || [])) {
+            for (const size of (p.sizes || [])) {
+                const qty = this.getQty(color.id, size.id);
+                if (qty > 0) {
+                    // Find matching ptav_ids from standard rows
+                    const ptavIds = this._findPtavIds(color.id, size.id);
+                    if (ptavIds && ptavIds.length > 0) {
+                        matrixChanges.push({
+                            qty: qty,
+                            ptav_ids: ptavIds,
+                        });
+                    }
+                }
+            }
+        }
+
+        if (matrixChanges.length > 0) {
+            this.props.record.update({
+                grid: JSON.stringify({
+                    changes: matrixChanges,
+                    product_template_id: this.props.product_template_id,
+                }),
+                grid_update: true,
+            });
+        }
+        this.props.close();
     }
 
-    get productCounter() {
-        const total = this.state.products.length;
-        const current = this.state.currentProductIndex + 1;
-        return `${current} / ${total}`;
+    /**
+     * Find the ptav_ids (product template attribute value IDs) for a given
+     * color/size combination by scanning the standard matrix rows.
+     *
+     * The standard matrix cells have ptav_ids as comma-separated strings.
+     * We need to find the cell whose combination matches our color + size.
+     */
+    _findPtavIds(colorId, sizeId) {
+        if (!this._standardRows) return null;
+
+        // Build lookup from variant_map: colorId_sizeId -> product_id
+        const variantKey = `${colorId}_${sizeId}`;
+        const variantInfo = this.state.product?.variant_map?.[variantKey];
+        if (!variantInfo) return null;
+
+        // Scan all standard matrix cells to find one matching this combination
+        for (const row of this._standardRows) {
+            for (const cell of row) {
+                if (cell.ptav_ids && cell.is_possible_combination) {
+                    // The ptav_ids in the cell correspond to the variant's
+                    // product_template_attribute_value_ids. We match by checking
+                    // if this cell's combination maps to the same product variant.
+                    // Store the ptav_ids for each cell
+                    const ptavIds = cell.ptav_ids.split(",").map(id => parseInt(id));
+                    // Check if this cell was already populated with this color/size
+                    // We'll use a heuristic: try all cells and see which one
+                    // maps to the correct variant by matching ptav names/values.
+                    // Since we need to be efficient, store ptavIds per cell and
+                    // match against the variant map during load.
+                    // For now, collect all ptav_ids and check against product variant
+                    if (this._ptavMatchesVariant(ptavIds, colorId, sizeId)) {
+                        return ptavIds;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Check if a set of ptav_ids corresponds to a variant with the given
+     * color and size attribute values.
+     *
+     * We use the _ptavToVariant map built during initialization.
+     */
+    _ptavMatchesVariant(ptavIds, colorId, sizeId) {
+        // If we have a pre-built map, use it
+        if (this._ptavMap) {
+            const key = ptavIds.sort((a, b) => a - b).join(",");
+            const mapped = this._ptavMap[key];
+            if (mapped) {
+                return mapped.colorId === colorId && mapped.sizeId === sizeId;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Build the ptav -> color/size mapping by cross-referencing
+     * the standard matrix data with the fashion data.
+     *
+     * Called after fashion data is loaded so we can do a server call
+     * to resolve ptav_ids to attribute value ids.
+     */
+    async _buildPtavMap() {
+        this._ptavMap = {};
+        if (!this._standardRows || !this.state.product) return;
+
+        // Collect all unique ptav_ids from the matrix
+        const allPtavSets = [];
+        for (const row of this._standardRows) {
+            for (const cell of row) {
+                if (cell.ptav_ids && cell.is_possible_combination) {
+                    const ptavIds = cell.ptav_ids.split(",").map(id => parseInt(id)).sort((a, b) => a - b);
+                    allPtavSets.push(ptavIds);
+                }
+            }
+        }
+
+        if (allPtavSets.length === 0) return;
+
+        // Fetch all ptav records to get their product_attribute_value_id
+        const allPtavIds = [...new Set(allPtavSets.flat())];
+        try {
+            const ptavRecords = await this.orm.searchRead(
+                "product.template.attribute.value",
+                [["id", "in", allPtavIds]],
+                ["id", "product_attribute_value_id", "attribute_id"],
+            );
+
+            // Build ptav_id -> { attribute_value_id, attribute_id }
+            const ptavLookup = {};
+            for (const rec of ptavRecords) {
+                ptavLookup[rec.id] = {
+                    valueId: rec.product_attribute_value_id[0],
+                    attrId: rec.attribute_id[0],
+                };
+            }
+
+            // Determine which attribute is color and which is size
+            const p = this.state.product;
+            const colorValueIds = new Set((p.colors || []).map(c => c.id));
+            const sizeValueIds = new Set((p.sizes || []).map(s => s.id));
+
+            // For each ptav combination, determine color and size
+            for (const ptavIds of allPtavSets) {
+                let colorId = null;
+                let sizeId = null;
+                for (const ptavId of ptavIds) {
+                    const info = ptavLookup[ptavId];
+                    if (!info) continue;
+                    if (colorValueIds.has(info.valueId)) {
+                        colorId = info.valueId;
+                    } else if (sizeValueIds.has(info.valueId)) {
+                        sizeId = info.valueId;
+                    }
+                }
+                if (colorId && sizeId) {
+                    const key = ptavIds.join(",");
+                    this._ptavMap[key] = { colorId, sizeId };
+                }
+            }
+        } catch (e) {
+            console.error("FashionMatrixDialog: Error building ptav map", e);
+        }
+    }
+
+    _onDiscard() {
+        this.props.close();
+    }
+
+    onClearAll() {
+        for (const key of Object.keys(this.state.quantities)) {
+            this.state.quantities[key] = 0;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // DATA LOADING (main entry point, called from onWillStart)
+    // -------------------------------------------------------------------------
+
+    async _loadFashionData() {
+        try {
+            const data = await this.orm.call(
+                "product.template",
+                "get_fashion_matrix_data",
+                [this.props.product_template_id],
+            );
+            this.state.product = data;
+            this._initQuantitiesFromMatrix(data);
+
+            // Build the ptav -> color/size mapping for the confirm action
+            await this._buildPtavMap();
+
+            // Now re-init quantities using the ptav map for editing scenarios
+            this._reinitQuantitiesWithPtavMap(data);
+
+            this.state.loading = false;
+        } catch (e) {
+            console.error("FashionMatrixDialog: Error loading fashion data", e);
+            this.state.loading = false;
+        }
+    }
+
+    /**
+     * Re-initialize quantities using the ptav map to correctly map
+     * existing matrix quantities to our color/size grid.
+     */
+    _reinitQuantitiesWithPtavMap(fashionData) {
+        if (!this._ptavMap || !this._standardRows || !fashionData) return;
+
+        for (const row of this._standardRows) {
+            for (const cell of row) {
+                if (cell.ptav_ids && cell.is_possible_combination && cell.qty) {
+                    const qty = parseFloat(cell.qty) || 0;
+                    if (qty > 0) {
+                        const ptavIds = cell.ptav_ids.split(",").map(id => parseInt(id)).sort((a, b) => a - b);
+                        const key = ptavIds.join(",");
+                        const mapped = this._ptavMap[key];
+                        if (mapped) {
+                            const qtyKey = `${mapped.colorId}_${mapped.sizeId}`;
+                            this.state.quantities[qtyKey] = qty;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // HELPERS
+    // -------------------------------------------------------------------------
+
+    _focusFirstInput() {
+        const container = this.matrixRef.el;
+        if (container) {
+            const firstInput = container.querySelector(".o_fashion_matrix_input");
+            if (firstInput) {
+                firstInput.focus();
+                firstInput.select();
+            }
+        }
     }
 }
-
-// Register the client action
-registry.category("actions").add(
-    "pc_fashion_matrix.open_fashion_matrix",
-    FashionMatrixAction
-);
-
-
-// Also register the method on purchase.order to add lines from the matrix
-// This needs a corresponding Python method:
-

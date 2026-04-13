@@ -50,7 +50,7 @@
                 <filter string="Unisex" name="filter_unisex"
                         domain="[('fashion_gender', '=', 'unisex')]"/>
                 <separator/>
-                <group>
+                <group expand="0" string="Group By">
                     <filter string="Season" name="group_season"
                             context="{'group_by': 'fashion_season_id'}"/>
                     <filter string="Family" name="group_family"

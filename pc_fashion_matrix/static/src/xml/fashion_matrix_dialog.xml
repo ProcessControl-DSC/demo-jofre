@@ -1,309 +1,219 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <t t-name="pc_fashion_matrix.FashionMatrixAction">
-        <div class="o_fashion_matrix_container d-flex flex-column vh-100">
+    <!--
+        FashionMatrixDialog
+        Enhanced matrix popup with product image, color swatches and totals.
+        Replaces the standard ProductMatrixDialog for products with Color + Size.
+    -->
+    <t t-name="pc_fashion_matrix.FashionMatrixDialog">
+        <Dialog size="size" title.translate="Choose Product Variants" withBodyPadding="false">
+            <div t-ref="fashionMatrix" class="o_fashion_matrix_dialog d-flex flex-column h-100">
 
-            <!-- TOP BAR -->
-            <div class="o_fashion_matrix_topbar d-flex align-items-center px-3 py-2 border-bottom bg-white shadow-sm">
-                <button class="btn btn-outline-secondary btn-sm me-3"
-                        t-on-click="onGoBack">
-                    <i class="fa fa-arrow-left me-1"/>Back to Order
-                </button>
-                <span class="fw-bold fs-5 me-3">Fashion Matrix</span>
-                <span class="badge bg-secondary me-2" t-if="state.product">
-                    <t t-esc="productCounter"/>
-                </span>
-                <div class="ms-auto d-flex align-items-center gap-2">
-                    <button class="btn btn-outline-secondary btn-sm"
-                            t-on-click="onPrevProduct"
-                            t-att-disabled="state.currentProductIndex === 0">
-                        <i class="fa fa-chevron-left me-1"/>Prev
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm"
-                            t-on-click="onSkip">
-                        Skip<i class="fa fa-forward ms-1"/>
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm"
-                            t-on-click="onNextProduct"
-                            t-att-disabled="state.currentProductIndex >= state.products.length - 1">
-                        Next<i class="fa fa-chevron-right ms-1"/>
-                    </button>
-                </div>
-            </div>
-
-            <!-- LOADING STATE -->
-            <div t-if="state.loading" class="d-flex justify-content-center align-items-center flex-grow-1">
-                <div class="text-center">
-                    <div class="spinner-border text-primary mb-3" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                <!-- LOADING STATE -->
+                <div t-if="state.loading" class="d-flex justify-content-center align-items-center flex-grow-1 py-5">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted">Loading product data...</p>
                     </div>
-                    <p class="text-muted">Loading product data...</p>
                 </div>
-            </div>
 
-            <!-- NO PRODUCTS -->
-            <div t-if="!state.loading and (!state.product or state.products.length === 0)"
-                 class="d-flex justify-content-center align-items-center flex-grow-1">
-                <div class="text-center">
-                    <i class="fa fa-cube fa-4x text-muted mb-3"/>
-                    <h4 class="text-muted">No products found</h4>
-                    <p class="text-muted">
-                        No products with color/size attributes match the current filter criteria.
-                    </p>
-                    <button class="btn btn-primary" t-on-click="onGoBack">
-                        Back to Order
-                    </button>
-                </div>
-            </div>
+                <!-- MAIN CONTENT (after loading) -->
+                <div t-if="!state.loading and state.product"
+                     class="o_fashion_matrix_body d-flex flex-grow-1 overflow-hidden">
 
-            <!-- MAIN CONTENT -->
-            <div t-if="!state.loading and state.product"
-                 class="o_fashion_matrix_main d-flex flex-grow-1 overflow-hidden">
+                    <!-- ==================== LEFT PANEL: Image ==================== -->
+                    <div class="o_fashion_matrix_left_panel d-flex flex-column">
 
-                <!-- LEFT PANEL: Images + Product List -->
-                <div class="o_fashion_matrix_left d-flex flex-column border-end"
-                     style="width: 40%; min-width: 350px;">
-
-                    <!-- Product Image Gallery -->
-                    <div class="o_fashion_matrix_gallery flex-grow-1 d-flex flex-column p-3">
-                        <!-- Main Image -->
-                        <div class="o_fashion_matrix_main_image position-relative mb-2 flex-grow-1 d-flex align-items-center justify-content-center bg-light rounded"
-                             style="min-height: 300px;">
+                        <!-- Main Image Area -->
+                        <div class="o_fashion_matrix_image_area flex-grow-1 d-flex align-items-center justify-content-center position-relative">
                             <t t-if="currentImage">
                                 <img t-att-src="currentImage.src"
-                                     class="img-fluid rounded"
-                                     style="max-height: 100%; max-width: 100%; object-fit: contain;"
+                                     class="o_fashion_matrix_main_img"
                                      alt="Product image"/>
-                                <!-- Nav arrows on the image -->
-                                <button t-if="state.product.images.length > 1"
-                                        class="btn btn-light btn-sm position-absolute start-0 top-50 translate-middle-y ms-2 rounded-circle shadow-sm"
+                                <!-- Navigation arrows -->
+                                <button t-if="hasMultipleImages"
+                                        class="btn o_fashion_img_nav o_fashion_img_nav_prev"
                                         t-on-click="onPrevImage">
                                     <i class="fa fa-chevron-left"/>
                                 </button>
-                                <button t-if="state.product.images.length > 1"
-                                        class="btn btn-light btn-sm position-absolute end-0 top-50 translate-middle-y me-2 rounded-circle shadow-sm"
+                                <button t-if="hasMultipleImages"
+                                        class="btn o_fashion_img_nav o_fashion_img_nav_next"
                                         t-on-click="onNextImage">
                                     <i class="fa fa-chevron-right"/>
                                 </button>
                             </t>
                             <t t-else="">
-                                <div class="text-center text-muted">
-                                    <i class="fa fa-image fa-4x mb-2"/>
-                                    <p>No image available</p>
+                                <div class="text-center text-muted py-5">
+                                    <i class="fa fa-image fa-5x mb-3 d-block" style="opacity: 0.3;"/>
+                                    <p class="mb-0">No image</p>
                                 </div>
                             </t>
                         </div>
 
                         <!-- Thumbnail Strip -->
-                        <div t-if="state.product.images and state.product.images.length > 1"
-                             class="o_fashion_matrix_thumbnails d-flex gap-2 overflow-auto py-2">
+                        <div t-if="hasMultipleImages"
+                             class="o_fashion_matrix_thumbstrip d-flex gap-2 p-2 overflow-auto justify-content-center">
                             <t t-foreach="state.product.images" t-as="img" t-key="img.id">
-                                <div class="o_fashion_matrix_thumb rounded border cursor-pointer"
-                                     t-att-class="{'border-primary border-2': img_index === state.currentImageIndex}"
-                                     t-on-click="() => this.onSelectThumbnail(img_index)"
-                                     style="width: 60px; height: 60px; flex-shrink: 0; overflow: hidden;">
-                                    <img t-att-src="img.src"
-                                         class="w-100 h-100"
-                                         style="object-fit: cover;"
-                                         alt="Thumbnail"/>
+                                <div class="o_fashion_matrix_thumb"
+                                     t-att-class="{'active': img_index === state.currentImageIndex}"
+                                     t-on-click="() => this.onSelectThumbnail(img_index)">
+                                    <img t-att-src="img.src" alt="Thumbnail"/>
                                 </div>
                             </t>
                         </div>
+
+                        <!-- Quick Product Info under image -->
+                        <div class="o_fashion_matrix_img_info p-3 border-top">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span t-if="state.product.seller_name"
+                                      class="text-muted text-uppercase small fw-semibold">
+                                    <t t-esc="state.product.seller_name"/>
+                                </span>
+                                <span t-if="state.product.gender_display"
+                                      class="badge badge-sm"
+                                      t-att-class="genderBadgeClass">
+                                    <t t-esc="state.product.gender_display"/>
+                                </span>
+                                <span t-if="state.product.season"
+                                      class="badge badge-sm bg-dark">
+                                    <t t-esc="state.product.season_code || state.product.season"/>
+                                </span>
+                            </div>
+                            <div class="fw-bold fs-5 mb-1">
+                                <t t-esc="state.product.name"/>
+                            </div>
+                            <div class="text-muted small">
+                                <span t-if="state.product.default_code" class="me-3">
+                                    <i class="fa fa-barcode me-1"/>
+                                    <t t-esc="state.product.default_code"/>
+                                </span>
+                                <span t-if="state.product.family">
+                                    <i class="fa fa-tag me-1"/>
+                                    <t t-esc="state.product.family"/>
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Product List (scrollable) -->
-                    <div class="o_fashion_matrix_product_list border-top"
-                         style="max-height: 200px; overflow-y: auto;">
-                        <div class="p-2">
-                            <input type="text"
-                                   class="form-control form-control-sm mb-2"
-                                   placeholder="Search products..."
-                                   t-att-value="state.searchQuery"
-                                   t-on-input="onSearchProducts"/>
-                        </div>
-                        <div class="list-group list-group-flush">
-                            <t t-foreach="filteredProducts" t-as="prod" t-key="prod.id">
-                                <a class="list-group-item list-group-item-action py-1 px-3 d-flex align-items-center small"
-                                   href="#"
-                                   t-att-class="{'active': prod.id === state.product.id}"
-                                   t-on-click.prevent="() => this.onSelectProduct(prod.id)">
-                                    <span class="text-truncate flex-grow-1">
-                                        <t t-if="prod.default_code">
-                                            <span class="text-muted">[<t t-esc="prod.default_code"/>]</span>
-                                        </t>
-                                        <t t-esc="prod.name"/>
-                                    </span>
-                                    <span class="badge bg-light text-dark ms-1">
-                                        <t t-esc="prod.list_price.toFixed(2)"/>
-                                    </span>
-                                </a>
-                            </t>
-                        </div>
-                    </div>
-                </div>
+                    <!-- ==================== RIGHT PANEL: Matrix ==================== -->
+                    <div class="o_fashion_matrix_right_panel d-flex flex-column flex-grow-1 overflow-hidden">
 
-                <!-- RIGHT PANEL: Product Info + Matrix Grid -->
-                <div class="o_fashion_matrix_right d-flex flex-column flex-grow-1 overflow-auto"
-                     style="width: 60%;">
-                    <div class="p-3" t-ref="gridContainer">
-
-                        <!-- Product Header -->
-                        <div class="o_fashion_matrix_header mb-3">
-                            <div class="d-flex align-items-start justify-content-between">
-                                <div>
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <span t-if="state.product.seller_name"
-                                              class="text-muted text-uppercase small fw-bold">
-                                            <t t-esc="state.product.seller_name"/>
-                                        </span>
-                                        <span t-if="state.product.gender_display"
-                                              class="badge"
-                                              t-att-class="genderBadgeClass">
-                                            <t t-esc="state.product.gender_display"/>
-                                        </span>
-                                        <span t-if="state.product.season"
-                                              class="badge bg-dark">
-                                            <t t-esc="state.product.season_code || state.product.season"/>
-                                        </span>
-                                    </div>
-                                    <h3 class="mb-1"><t t-esc="state.product.name"/></h3>
-                                    <div class="text-muted small">
-                                        <t t-if="state.product.default_code">
-                                            <span class="me-3">
-                                                <i class="fa fa-barcode me-1"/>
-                                                <t t-esc="state.product.default_code"/>
-                                            </span>
-                                        </t>
-                                        <t t-if="state.product.supplier_style">
-                                            <span class="me-3">
-                                                Style: <t t-esc="state.product.supplier_style"/>
-                                            </span>
-                                        </t>
-                                        <t t-if="state.product.supplier_fabric">
-                                            <span class="me-3">
-                                                Fabric: <t t-esc="state.product.supplier_fabric"/>
-                                            </span>
-                                        </t>
-                                        <t t-if="state.product.family">
-                                            <span>
-                                                <i class="fa fa-tag me-1"/>
-                                                <t t-esc="state.product.family"/>
-                                            </span>
-                                        </t>
-                                    </div>
-                                </div>
-
-                                <!-- Price Info Card -->
-                                <div class="o_fashion_matrix_price_card border rounded p-2 text-end"
-                                     style="min-width: 200px;">
-                                    <div class="small text-muted">PVP</div>
-                                    <div class="fs-4 fw-bold">
-                                        <t t-esc="formatCurrency(state.product.list_price)"/>
-                                    </div>
-                                    <div class="small text-muted mt-1">Cost</div>
-                                    <div class="fw-bold">
-                                        <t t-esc="formatCurrency(costPrice)"/>
-                                    </div>
-                                    <div class="small mt-1">
-                                        <span class="text-muted">Margin: </span>
-                                        <span t-att-class="marginClass">
-                                            <t t-esc="((state.product.list_price - costPrice) / (state.product.list_price || 1) * 100).toFixed(1)"/>%
-                                        </span>
-                                    </div>
-                                </div>
+                        <!-- Price Bar -->
+                        <div class="o_fashion_matrix_price_bar d-flex align-items-center gap-4 px-4 py-2 border-bottom">
+                            <div class="d-flex align-items-baseline gap-2">
+                                <span class="text-muted small">PVP</span>
+                                <span class="fs-4 fw-bold">
+                                    <t t-esc="formatCurrency(state.product.list_price)"/>
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2">
+                                <span class="text-muted small">Cost</span>
+                                <span class="fs-5 fw-bold">
+                                    <t t-esc="formatCurrency(costPrice)"/>
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2">
+                                <span class="text-muted small">Margin</span>
+                                <span class="fs-6 fw-bold" t-att-class="marginClass">
+                                    <t t-esc="unitMarginPercent.toFixed(1)"/>%
+                                </span>
+                            </div>
+                            <div class="ms-auto">
+                                <button class="btn btn-outline-secondary btn-sm"
+                                        t-on-click="onClearAll"
+                                        title="Clear all quantities">
+                                    <i class="fa fa-eraser me-1"/>Clear
+                                </button>
                             </div>
                         </div>
 
                         <!-- Color Swatches -->
-                        <div class="o_fashion_matrix_swatches mb-3">
+                        <div class="o_fashion_matrix_swatches px-4 py-2 border-bottom">
                             <div class="d-flex align-items-center gap-1 flex-wrap">
-                                <span class="small text-muted me-2 fw-bold">Colors:</span>
+                                <span class="small text-muted me-2 fw-semibold">Colors:</span>
                                 <t t-foreach="state.product.colors" t-as="color" t-key="color.id">
                                     <div class="o_fashion_color_swatch d-flex align-items-center gap-1 px-2 py-1 rounded-pill border cursor-pointer"
-                                         t-att-class="{'border-primary border-2 shadow-sm': state.activeColorId === color.id}"
+                                         t-att-class="{'o_fashion_swatch_active': state.activeColorId === color.id}"
                                          t-on-click="() => this.onSelectColor(color.id)"
                                          t-att-title="color.name">
-                                        <span class="o_fashion_color_circle rounded-circle border"
-                                              t-att-style="'background-color: ' + color.html_color + ';'"
-                                              style="width: 18px; height: 18px; display: inline-block;"/>
+                                        <span class="o_fashion_color_dot"
+                                              t-att-style="'background-color: ' + color.html_color + ';'"/>
                                         <span class="small"><t t-esc="color.name"/></span>
                                     </div>
                                 </t>
                                 <button t-if="state.activeColorId"
-                                        class="btn btn-outline-secondary btn-sm ms-2"
+                                        class="btn btn-link btn-sm text-muted ms-2 p-0"
                                         t-on-click="() => this.state.activeColorId = null">
                                     <i class="fa fa-times me-1"/>Show All
                                 </button>
                             </div>
                         </div>
 
-                        <!-- SIZE x COLOR GRID -->
-                        <div class="o_fashion_matrix_grid mb-3">
+                        <!-- Size x Color Grid (scrollable) -->
+                        <div class="o_fashion_matrix_grid_wrapper flex-grow-1 overflow-auto px-4 py-3">
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered o_fashion_matrix_table mb-0">
                                     <thead>
-                                        <tr class="o_fashion_matrix_header_row">
-                                            <th class="o_fashion_matrix_corner_cell text-center align-middle"
-                                                style="min-width: 120px;">
+                                        <tr class="o_fashion_matrix_thead_row">
+                                            <th class="o_fashion_matrix_corner">
                                                 Color / Size
                                             </th>
                                             <t t-foreach="state.product.sizes" t-as="size" t-key="size.id">
-                                                <th class="text-center align-middle o_fashion_matrix_size_header"
-                                                    style="min-width: 65px;">
+                                                <th class="text-center o_fashion_matrix_size_th">
                                                     <t t-esc="size.name"/>
                                                 </th>
                                             </t>
-                                            <th class="text-center align-middle o_fashion_matrix_total_header"
-                                                style="min-width: 70px;">
+                                            <th class="text-center o_fashion_matrix_total_th">
                                                 Total
                                             </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <t t-foreach="visibleColors" t-as="color" t-key="color.id">
-                                            <tr class="o_fashion_matrix_row">
-                                                <!-- Color label cell -->
-                                                <td class="o_fashion_matrix_color_cell align-middle">
+                                            <tr class="o_fashion_matrix_body_row">
+                                                <!-- Color label -->
+                                                <td class="o_fashion_matrix_color_label">
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <span class="o_fashion_color_circle rounded-circle border"
-                                                              t-att-style="'background-color: ' + color.html_color + ';'"
-                                                              style="width: 16px; height: 16px; display: inline-block; flex-shrink: 0;"/>
-                                                        <span class="small fw-bold text-truncate">
+                                                        <span class="o_fashion_color_dot"
+                                                              t-att-style="'background-color: ' + color.html_color + ';'"/>
+                                                        <span class="small fw-semibold text-truncate">
                                                             <t t-esc="color.name"/>
                                                         </span>
                                                     </div>
                                                 </td>
                                                 <!-- Quantity cells -->
                                                 <t t-foreach="state.product.sizes" t-as="size" t-key="size.id">
-                                                    <td class="o_fashion_matrix_cell text-center p-0">
+                                                    <td class="o_fashion_matrix_qty_cell p-0">
                                                         <input type="number"
-                                                               class="form-control form-control-sm text-center border-0 o_fashion_matrix_input"
+                                                               class="o_fashion_matrix_input"
                                                                min="0"
                                                                t-att-value="getQty(color.id, size.id)"
                                                                t-on-change="(ev) => this.onQtyChange(color.id, size.id, ev)"
                                                                t-on-keydown="(ev) => this.onQtyKeydown(color.id, size.id, ev)"
                                                                t-att-data-color="color.id"
-                                                               t-att-data-size="size.id"/>
+                                                               t-att-data-size="size.id"
+                                                               onClick="this.select();"/>
                                                     </td>
                                                 </t>
                                                 <!-- Row total -->
-                                                <td class="o_fashion_matrix_row_total text-center align-middle fw-bold">
+                                                <td class="o_fashion_matrix_row_total text-center fw-bold">
                                                     <t t-esc="getRowTotal(color.id)"/>
                                                 </td>
                                             </tr>
                                         </t>
                                     </tbody>
                                     <tfoot>
-                                        <!-- Column totals row -->
-                                        <tr class="o_fashion_matrix_totals_row">
-                                            <td class="fw-bold text-end align-middle">Total</td>
+                                        <tr class="o_fashion_matrix_tfoot_row">
+                                            <td class="fw-bold text-end">Total</td>
                                             <t t-foreach="state.product.sizes" t-as="size" t-key="size.id">
-                                                <td class="text-center align-middle fw-bold o_fashion_matrix_col_total">
+                                                <td class="text-center fw-bold o_fashion_matrix_col_total">
                                                     <t t-esc="getColTotal(size.id)"/>
                                                 </td>
                                             </t>
-                                            <td class="text-center align-middle fw-bold o_fashion_matrix_grand_total">
+                                            <td class="text-center fw-bold o_fashion_matrix_grand_total">
                                                 <t t-esc="grandTotalUnits"/>
                                             </td>
                                         </tr>
@@ -312,22 +222,21 @@
                             </div>
                         </div>
 
-                        <!-- ORDER SUMMARY -->
-                        <div class="o_fashion_matrix_summary d-flex justify-content-between align-items-center mb-3 p-3 rounded border"
-                             style="background-color: #f8f9fa;">
+                        <!-- Order Summary Bar -->
+                        <div class="o_fashion_matrix_summary_bar d-flex align-items-center justify-content-between px-4 py-3 border-top">
                             <div class="d-flex gap-4">
                                 <div>
                                     <span class="small text-muted d-block">Units</span>
                                     <span class="fs-5 fw-bold"><t t-esc="grandTotalUnits"/></span>
                                 </div>
                                 <div>
-                                    <span class="small text-muted d-block">Value at PVP</span>
+                                    <span class="small text-muted d-block">PVP Value</span>
                                     <span class="fs-5 fw-bold text-success">
                                         <t t-esc="formatCurrency(grandTotalPVP)"/>
                                     </span>
                                 </div>
                                 <div>
-                                    <span class="small text-muted d-block">Value at Cost</span>
+                                    <span class="small text-muted d-block">Cost Value</span>
                                     <span class="fs-5 fw-bold">
                                         <t t-esc="formatCurrency(grandTotalCost)"/>
                                     </span>
@@ -339,141 +248,33 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-secondary btn-sm"
-                                        t-on-click="onClearAll">
-                                    <i class="fa fa-eraser me-1"/>Clear
-                                </button>
-                                <button class="btn btn-primary"
-                                        t-on-click="onConfirm"
-                                        t-att-disabled="grandTotalUnits === 0">
-                                    <i class="fa fa-check me-1"/>Add to Order
-                                </button>
-                            </div>
                         </div>
-
-                        <!-- STORE DISTRIBUTION (Collapsible) -->
-                        <div class="o_fashion_matrix_distribution mb-3">
-                            <div class="d-flex align-items-center cursor-pointer border-bottom pb-2 mb-2"
-                                 t-on-click="toggleDistribution">
-                                <i class="fa me-2"
-                                   t-att-class="{'fa-chevron-down': state.showDistribution, 'fa-chevron-right': !state.showDistribution}"/>
-                                <span class="fw-bold">Store Distribution</span>
-                                <span class="badge bg-secondary ms-2"
-                                      t-if="selectedProfile">
-                                    <t t-esc="selectedProfile.name"/>
-                                </span>
-                            </div>
-
-                            <div t-if="state.showDistribution">
-                                <!-- Profile selector -->
-                                <div class="mb-3 d-flex align-items-center gap-3">
-                                    <label class="small fw-bold text-nowrap">Profile:</label>
-                                    <select class="form-select form-select-sm"
-                                            style="max-width: 300px;"
-                                            t-on-change="onSelectProfile">
-                                        <option value="">-- Select Profile --</option>
-                                        <t t-foreach="state.distributionProfiles" t-as="profile" t-key="profile.id">
-                                            <option t-att-value="profile.id"
-                                                    t-att-selected="profile.id === state.selectedProfileId">
-                                                <t t-esc="profile.name"/>
-                                            </option>
-                                        </t>
-                                    </select>
-                                </div>
-
-                                <!-- Distribution grid per store -->
-                                <t t-if="selectedProfile and grandTotalUnits > 0">
-                                    <t t-foreach="selectedProfile.lines" t-as="storeLine" t-key="storeLine.warehouse_id">
-                                        <div class="o_fashion_matrix_store_block mb-3 border rounded p-2">
-                                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                                <div class="fw-bold">
-                                                    <i class="fa fa-warehouse me-1"/>
-                                                    <t t-esc="storeLine.warehouse_name"/>
-                                                </div>
-                                                <div class="d-flex gap-3 small">
-                                                    <span class="text-muted">
-                                                        <t t-esc="storeLine.percentage.toFixed(1)"/>%
-                                                    </span>
-                                                    <span class="fw-bold">
-                                                        <t t-esc="getStoreGrandTotal(storeLine.warehouse_id)"/> units
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="table-responsive">
-                                                <table class="table table-sm table-bordered mb-0 o_fashion_distribution_table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th class="small" style="min-width: 100px;">Color</th>
-                                                            <t t-foreach="state.product.sizes" t-as="size" t-key="size.id">
-                                                                <th class="text-center small" style="min-width: 50px;">
-                                                                    <t t-esc="size.name"/>
-                                                                </th>
-                                                            </t>
-                                                            <th class="text-center small" style="min-width: 50px;">Total</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <t t-foreach="visibleColors" t-as="color" t-key="color.id">
-                                                            <tr t-if="getRowTotal(color.id) > 0">
-                                                                <td class="small">
-                                                                    <div class="d-flex align-items-center gap-1">
-                                                                        <span class="o_fashion_color_circle rounded-circle border"
-                                                                              t-att-style="'background-color: ' + color.html_color + ';'"
-                                                                              style="width: 12px; height: 12px; display: inline-block;"/>
-                                                                        <t t-esc="color.name"/>
-                                                                    </div>
-                                                                </td>
-                                                                <t t-foreach="state.product.sizes" t-as="size" t-key="size.id">
-                                                                    <td class="text-center small o_fashion_distribution_cell">
-                                                                        <t t-esc="getStoreQty(storeLine.warehouse_id, color.id, size.id)"/>
-                                                                    </td>
-                                                                </t>
-                                                                <td class="text-center small fw-bold">
-                                                                    <t t-esc="getStoreTotalForColor(storeLine.warehouse_id, color.id)"/>
-                                                                </td>
-                                                            </tr>
-                                                        </t>
-                                                    </tbody>
-                                                    <tfoot>
-                                                        <tr>
-                                                            <td class="small fw-bold text-end">Total</td>
-                                                            <t t-foreach="state.product.sizes" t-as="size" t-key="size.id">
-                                                                <td class="text-center small fw-bold">
-                                                                    <t t-esc="getStoreTotalForSize(storeLine.warehouse_id, size.id)"/>
-                                                                </td>
-                                                            </t>
-                                                            <td class="text-center small fw-bold">
-                                                                <t t-esc="getStoreGrandTotal(storeLine.warehouse_id)"/>
-                                                            </td>
-                                                        </tr>
-                                                    </tfoot>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </t>
-                                </t>
-
-                                <t t-if="!selectedProfile">
-                                    <div class="text-muted text-center py-3 small">
-                                        <i class="fa fa-info-circle me-1"/>
-                                        Select a distribution profile to see the store allocation.
-                                    </div>
-                                </t>
-                                <t t-if="selectedProfile and grandTotalUnits === 0">
-                                    <div class="text-muted text-center py-3 small">
-                                        <i class="fa fa-info-circle me-1"/>
-                                        Enter quantities in the matrix above to see the distribution.
-                                    </div>
-                                </t>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
+
+                <!-- FALLBACK: no fashion data (product without color/size) -->
+                <div t-if="!state.loading and !state.product"
+                     class="d-flex justify-content-center align-items-center flex-grow-1 py-5">
+                    <div class="text-center text-muted">
+                        <i class="fa fa-exclamation-triangle fa-3x mb-3"/>
+                        <p>Unable to load product fashion data.</p>
+                    </div>
+                </div>
+
             </div>
 
-        </div>
+            <!-- Footer: Confirm / Discard -->
+            <t t-set-slot="footer">
+                <button class="btn btn-primary"
+                        t-on-click="_onConfirm"
+                        t-att-disabled="grandTotalUnits === 0">
+                    Confirm
+                </button>
+                <button class="btn btn-secondary" t-on-click="_onDiscard">
+                    Discard
+                </button>
+            </t>
+        </Dialog>
     </t>
 
 </templates>

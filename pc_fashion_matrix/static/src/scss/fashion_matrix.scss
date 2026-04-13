@@ -1,147 +1,189 @@
 // ============================================================================
-// PC Fashion Matrix - Styles
-// Enhanced product matrix for fashion retail B2B ordering
-// Inspired by Le New Black platform aesthetics
+// PC Fashion Matrix - Enhanced Dialog Styles
+// Modern, clean design for the fashion product matrix popup
 // ============================================================================
 
 // Variables
-$fashion-primary: #2c3e50;
-$fashion-accent: #3498db;
-$fashion-grid-border: #dee2e6;
-$fashion-grid-hover: #e8f4fd;
-$fashion-grid-active: #d4edfc;
-$fashion-total-bg: #f1f3f5;
-$fashion-header-bg: #343a40;
-$fashion-header-text: #ffffff;
-$fashion-input-focus: #3498db;
-$fashion-distribution-bg: #fafbfc;
+$fm-primary: #2c3e50;
+$fm-accent: #3498db;
+$fm-border: #dee2e6;
+$fm-hover: #e8f4fd;
+$fm-active: #d4edfc;
+$fm-total-bg: #f1f3f5;
+$fm-header-bg: #343a40;
+$fm-header-text: #ffffff;
+$fm-left-bg: #f8f9fa;
 
 // ============================================================================
-// Container
+// Dialog Override — make the fullscreen dialog use our layout
 // ============================================================================
 
-.o_fashion_matrix_container {
-    background-color: #f8f9fa;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+.o_fashion_matrix_dialog {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+    min-height: 0; // Allow flex shrinking
 }
 
 // ============================================================================
-// Top Bar
+// Layout: Left / Right Panels
 // ============================================================================
 
-.o_fashion_matrix_topbar {
-    z-index: 10;
-    background-color: #ffffff !important;
-    border-bottom: 2px solid $fashion-accent !important;
+.o_fashion_matrix_body {
+    min-height: 0;
 }
 
-// ============================================================================
-// Left Panel - Gallery + Product List
-// ============================================================================
+.o_fashion_matrix_left_panel {
+    width: 38%;
+    min-width: 320px;
+    max-width: 500px;
+    background-color: $fm-left-bg;
+    border-right: 1px solid $fm-border;
+    flex-shrink: 0;
+}
 
-.o_fashion_matrix_left {
+.o_fashion_matrix_right_panel {
     background-color: #ffffff;
+    min-width: 0; // Allow content to shrink with flex
+}
 
-    .o_fashion_matrix_gallery {
-        .o_fashion_matrix_main_image {
-            background-color: #fafafa;
-            border: 1px solid #eee;
-            transition: all 0.2s ease;
+// ============================================================================
+// Left Panel — Image Gallery
+// ============================================================================
 
-            img {
-                transition: opacity 0.3s ease;
-            }
-        }
+.o_fashion_matrix_image_area {
+    background-color: #ffffff;
+    min-height: 280px;
+    padding: 16px;
 
-        .o_fashion_matrix_thumb {
-            transition: all 0.15s ease;
-            opacity: 0.7;
+    .o_fashion_matrix_main_img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 6px;
+        transition: opacity 0.3s ease;
+    }
+}
 
-            &:hover {
-                opacity: 1;
-                transform: scale(1.05);
-            }
+.o_fashion_img_nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid $fm-border;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.15s ease;
+    color: $fm-primary;
 
-            &.border-primary {
-                opacity: 1;
-            }
-        }
+    &:hover {
+        background-color: #ffffff;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
     }
 
-    .o_fashion_matrix_product_list {
-        background-color: #fafafa;
+    &.o_fashion_img_nav_prev {
+        left: 12px;
+    }
 
-        .list-group-item {
-            font-size: 0.8rem;
-            border-left: 3px solid transparent;
-            transition: all 0.15s ease;
+    &.o_fashion_img_nav_next {
+        right: 12px;
+    }
+}
 
-            &:hover {
-                border-left-color: $fashion-accent;
-                background-color: $fashion-grid-hover;
-            }
+.o_fashion_matrix_thumbstrip {
+    background-color: $fm-left-bg;
+    border-top: 1px solid $fm-border;
 
-            &.active {
-                border-left-color: $fashion-accent;
-                background-color: $fashion-accent;
-                color: #ffffff;
+    .o_fashion_matrix_thumb {
+        width: 52px;
+        height: 52px;
+        border-radius: 6px;
+        border: 2px solid transparent;
+        overflow: hidden;
+        cursor: pointer;
+        flex-shrink: 0;
+        opacity: 0.6;
+        transition: all 0.15s ease;
 
-                .text-muted {
-                    color: rgba(255, 255, 255, 0.7) !important;
-                }
-            }
+        &:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        &.active {
+            opacity: 1;
+            border-color: $fm-accent;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
     }
 }
 
-// ============================================================================
-// Right Panel - Product Info + Matrix
-// ============================================================================
-
-.o_fashion_matrix_right {
+.o_fashion_matrix_img_info {
     background-color: #ffffff;
 }
 
 // ============================================================================
-// Product Header
+// Right Panel — Price Bar
 // ============================================================================
 
-.o_fashion_matrix_header {
-    .o_fashion_matrix_price_card {
-        background-color: #fafafa;
-        border-color: #eee !important;
-    }
+.o_fashion_matrix_price_bar {
+    background-color: #fafbfc;
 }
 
 // ============================================================================
-// Color Swatches
+// Right Panel — Color Swatches
 // ============================================================================
 
 .o_fashion_matrix_swatches {
-    .o_fashion_color_swatch {
-        transition: all 0.15s ease;
-        background-color: #fff;
+    background-color: #ffffff;
+}
 
-        &:hover {
-            background-color: #f0f0f0;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+.o_fashion_color_swatch {
+    transition: all 0.15s ease;
+    background-color: #ffffff;
+    font-size: 0.8rem;
 
-        &.border-primary {
-            background-color: #e8f4fd;
-        }
+    &:hover {
+        background-color: #f0f0f0;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
     }
 
-    .o_fashion_color_circle {
-        border-color: rgba(0, 0, 0, 0.15) !important;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    &.o_fashion_swatch_active {
+        border-color: $fm-accent !important;
+        border-width: 2px !important;
+        background-color: $fm-hover;
+        box-shadow: 0 0 0 1px $fm-accent;
     }
 }
 
+.o_fashion_color_dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+}
+
 // ============================================================================
-// Matrix Grid Table
+// Right Panel — Matrix Grid Table
 // ============================================================================
+
+.o_fashion_matrix_grid_wrapper {
+    background-color: #ffffff;
+}
 
 .o_fashion_matrix_table {
     border-collapse: separate;
@@ -149,43 +191,53 @@ $fashion-distribution-bg: #fafbfc;
 
     // Header row
     thead {
-        .o_fashion_matrix_header_row {
+        .o_fashion_matrix_thead_row {
             th {
-                background-color: $fashion-header-bg;
-                color: $fashion-header-text;
+                background-color: $fm-header-bg;
+                color: $fm-header-text;
                 font-size: 0.75rem;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
-                padding: 8px 4px;
-                border-color: lighten($fashion-header-bg, 15%) !important;
+                padding: 8px 6px;
+                border-color: lighten($fm-header-bg, 12%) !important;
                 position: sticky;
                 top: 0;
                 z-index: 2;
-
-                &.o_fashion_matrix_corner_cell {
-                    z-index: 3;
-                    position: sticky;
-                    left: 0;
-                }
+                white-space: nowrap;
+                vertical-align: middle;
+                text-align: center;
             }
 
-            .o_fashion_matrix_total_header {
-                background-color: darken($fashion-header-bg, 5%);
+            .o_fashion_matrix_corner {
+                z-index: 3;
+                position: sticky;
+                left: 0;
+                min-width: 130px;
+                text-align: center;
+            }
+
+            .o_fashion_matrix_size_th {
+                min-width: 60px;
+            }
+
+            .o_fashion_matrix_total_th {
+                min-width: 70px;
+                background-color: darken($fm-header-bg, 5%);
             }
         }
     }
 
     // Body rows
     tbody {
-        .o_fashion_matrix_row {
+        .o_fashion_matrix_body_row {
             transition: background-color 0.1s ease;
 
             &:hover {
-                background-color: $fashion-grid-hover;
+                background-color: $fm-hover;
 
-                .o_fashion_matrix_color_cell {
-                    background-color: $fashion-grid-hover;
+                .o_fashion_matrix_color_label {
+                    background-color: $fm-hover;
                 }
             }
 
@@ -193,236 +245,195 @@ $fashion-distribution-bg: #fafbfc;
                 background-color: #fafafa;
 
                 &:hover {
-                    background-color: $fashion-grid-hover;
+                    background-color: $fm-hover;
                 }
             }
         }
 
-        .o_fashion_matrix_color_cell {
-            background-color: #fff;
-            border-right: 2px solid $fashion-grid-border !important;
-            padding: 4px 8px;
+        .o_fashion_matrix_color_label {
+            background-color: #ffffff;
+            border-right: 2px solid $fm-border !important;
+            padding: 4px 10px;
             position: sticky;
             left: 0;
             z-index: 1;
-            min-width: 120px;
+            min-width: 130px;
+            vertical-align: middle;
         }
 
-        .o_fashion_matrix_cell {
+        .o_fashion_matrix_qty_cell {
             padding: 0 !important;
             position: relative;
-
-            .o_fashion_matrix_input {
-                width: 100%;
-                height: 100%;
-                min-height: 32px;
-                border-radius: 0;
-                font-size: 0.85rem;
-                font-weight: 500;
-                background-color: transparent;
-                transition: all 0.15s ease;
-
-                &:focus {
-                    background-color: $fashion-grid-active;
-                    box-shadow: inset 0 0 0 2px $fashion-input-focus;
-                    z-index: 1;
-                    position: relative;
-                    outline: none;
-                }
-
-                &:hover:not(:focus) {
-                    background-color: rgba($fashion-accent, 0.05);
-                }
-
-                // Hide spinner buttons for cleaner look
-                &::-webkit-outer-spin-button,
-                &::-webkit-inner-spin-button {
-                    -webkit-appearance: none;
-                    margin: 0;
-                }
-                -moz-appearance: textfield;
-            }
+            vertical-align: middle;
         }
 
         .o_fashion_matrix_row_total {
-            background-color: $fashion-total-bg;
-            border-left: 2px solid $fashion-grid-border !important;
+            background-color: $fm-total-bg;
+            border-left: 2px solid $fm-border !important;
             font-size: 0.85rem;
-            color: $fashion-primary;
+            color: $fm-primary;
+            vertical-align: middle;
+            padding: 4px 6px;
         }
     }
 
-    // Footer totals row
+    // Footer totals
     tfoot {
-        .o_fashion_matrix_totals_row {
+        .o_fashion_matrix_tfoot_row {
             td {
-                background-color: $fashion-total-bg;
-                border-top: 2px solid $fashion-grid-border !important;
+                background-color: $fm-total-bg;
+                border-top: 2px solid $fm-border !important;
                 font-size: 0.85rem;
-                padding: 8px 4px;
-                color: $fashion-primary;
+                padding: 8px 6px;
+                color: $fm-primary;
+                vertical-align: middle;
             }
 
             .o_fashion_matrix_grand_total {
-                background-color: darken($fashion-total-bg, 5%);
+                background-color: darken($fm-total-bg, 5%);
                 font-size: 1rem;
-                color: $fashion-accent;
+                color: $fm-accent;
             }
         }
     }
 }
 
 // ============================================================================
-// Order Summary Bar
+// Matrix Input Fields
 // ============================================================================
 
-.o_fashion_matrix_summary {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-    border-color: #dee2e6 !important;
+.o_fashion_matrix_input {
+    width: 100%;
+    height: 100%;
+    min-height: 34px;
+    border: none;
+    border-radius: 0;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background-color: transparent;
+    transition: all 0.15s ease;
+    padding: 4px 2px;
+    outline: none;
+
+    &:focus {
+        background-color: $fm-active;
+        box-shadow: inset 0 0 0 2px $fm-accent;
+        z-index: 1;
+        position: relative;
+    }
+
+    &:hover:not(:focus) {
+        background-color: rgba($fm-accent, 0.05);
+    }
+
+    // Hide spin buttons
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    -moz-appearance: textfield;
 }
 
 // ============================================================================
-// Store Distribution Section
+// Summary Bar
 // ============================================================================
 
-.o_fashion_matrix_distribution {
-    .o_fashion_matrix_store_block {
-        background-color: $fashion-distribution-bg;
-
-        .o_fashion_distribution_table {
-            font-size: 0.75rem;
-
-            thead {
-                th {
-                    background-color: #e9ecef;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.3px;
-                    padding: 4px;
-                }
-            }
-
-            tbody {
-                td {
-                    padding: 3px 4px;
-                }
-            }
-
-            .o_fashion_distribution_cell {
-                font-weight: 500;
-
-                // Highlight cells with values > 0
-                &:not(:empty) {
-                    color: $fashion-primary;
-                }
-            }
-
-            tfoot {
-                td {
-                    background-color: #e9ecef;
-                    border-top: 2px solid #dee2e6 !important;
-                    padding: 4px;
-                }
-            }
-        }
-    }
-}
-
-// ============================================================================
-// Responsive Adjustments
-// ============================================================================
-
-// Tablet (1024px and below)
-@media (max-width: 1024px) {
-    .o_fashion_matrix_container {
-        .o_fashion_matrix_main {
-            flex-direction: column !important;
-
-            .o_fashion_matrix_left {
-                width: 100% !important;
-                min-width: 100% !important;
-                max-height: 40vh;
-                border-end: 1px solid #dee2e6;
-                border-right: none !important;
-
-                .o_fashion_matrix_gallery {
-                    flex-direction: row !important;
-
-                    .o_fashion_matrix_main_image {
-                        min-height: 200px !important;
-                        max-height: 250px;
-                        width: 50%;
-                    }
-
-                    .o_fashion_matrix_thumbnails {
-                        flex-direction: column !important;
-                        max-height: 250px;
-                        width: 50%;
-                    }
-                }
-
-                .o_fashion_matrix_product_list {
-                    display: none; // Hide product list on tablet
-                }
-            }
-
-            .o_fashion_matrix_right {
-                width: 100% !important;
-            }
-        }
-    }
-
-    .o_fashion_matrix_table {
-        thead .o_fashion_matrix_header_row th {
-            font-size: 0.65rem;
-            padding: 6px 2px;
-        }
-
-        tbody .o_fashion_matrix_cell .o_fashion_matrix_input {
-            font-size: 0.75rem;
-            min-height: 28px;
-        }
-    }
-}
-
-// Large screens (1920px+)
-@media (min-width: 1920px) {
-    .o_fashion_matrix_table {
-        thead .o_fashion_matrix_header_row th {
-            font-size: 0.85rem;
-            padding: 10px 6px;
-        }
-
-        tbody .o_fashion_matrix_cell .o_fashion_matrix_input {
-            font-size: 0.95rem;
-            min-height: 36px;
-        }
-    }
-
-    .o_fashion_matrix_left {
-        .o_fashion_matrix_gallery {
-            .o_fashion_matrix_main_image {
-                min-height: 450px !important;
-            }
-        }
-    }
+.o_fashion_matrix_summary_bar {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
 // ============================================================================
 // Animations
 // ============================================================================
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes fashionFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.o_fashion_matrix_grid {
-    animation: fadeIn 0.3s ease-in-out;
+.o_fashion_matrix_grid_wrapper {
+    animation: fashionFadeIn 0.25s ease-in-out;
 }
 
-.o_fashion_matrix_store_block {
-    animation: fadeIn 0.2s ease-in-out;
+// ============================================================================
+// Responsive — Tablets and smaller screens
+// ============================================================================
+
+@media (max-width: 1024px) {
+    .o_fashion_matrix_body {
+        flex-direction: column !important;
+    }
+
+    .o_fashion_matrix_left_panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        max-height: 35vh;
+        border-right: none !important;
+        border-bottom: 1px solid $fm-border;
+        flex-direction: row !important;
+
+        .o_fashion_matrix_image_area {
+            min-height: 180px;
+            width: 50%;
+        }
+
+        .o_fashion_matrix_thumbstrip {
+            display: none !important;
+        }
+
+        .o_fashion_matrix_img_info {
+            width: 50%;
+            border-top: none !important;
+            border-left: 1px solid $fm-border;
+        }
+    }
+
+    .o_fashion_matrix_right_panel {
+        width: 100% !important;
+    }
+
+    .o_fashion_matrix_table {
+        thead .o_fashion_matrix_thead_row th {
+            font-size: 0.65rem;
+            padding: 6px 3px;
+        }
+
+        .o_fashion_matrix_input {
+            font-size: 0.75rem;
+            min-height: 28px;
+        }
+    }
+}
+
+// ============================================================================
+// Large screens (1920px+)
+// ============================================================================
+
+@media (min-width: 1920px) {
+    .o_fashion_matrix_table {
+        thead .o_fashion_matrix_thead_row th {
+            font-size: 0.85rem;
+            padding: 10px 8px;
+        }
+
+        .o_fashion_matrix_input {
+            font-size: 0.95rem;
+            min-height: 38px;
+        }
+    }
+
+    .o_fashion_matrix_image_area {
+        min-height: 400px;
+    }
 }
 
 // ============================================================================
@@ -430,15 +441,11 @@ $fashion-distribution-bg: #fafbfc;
 // ============================================================================
 
 @media print {
-    .o_fashion_matrix_topbar {
+    .o_fashion_matrix_left_panel {
         display: none !important;
     }
 
-    .o_fashion_matrix_left {
-        display: none !important;
-    }
-
-    .o_fashion_matrix_right {
+    .o_fashion_matrix_right_panel {
         width: 100% !important;
     }
 
