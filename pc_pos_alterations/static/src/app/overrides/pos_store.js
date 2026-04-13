@@ -26,25 +26,6 @@ patch(PosStore.prototype, {
     },
 
     /**
-     * Crea un arreglo desde el TPV llamando al backend.
-     * @param {Object} vals - Datos del arreglo
-     * @returns {Object} Datos del arreglo creado
-     */
-    async createAlteration(vals) {
-        vals.config_id = this.config.id;
-        vals.user_id = this.user.id;
-        if (!vals.warehouse_id) {
-            vals.warehouse_id = this.getWarehouseId();
-        }
-        const result = await this.data.call(
-            "pos.alteration",
-            "create_from_pos",
-            [vals]
-        );
-        return result;
-    },
-
-    /**
      * Obtiene los arreglos de la tienda actual.
      * @param {Array|null} states - Estados a filtrar
      * @returns {Array} Lista de arreglos

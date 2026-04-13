@@ -11,7 +11,6 @@ export class AlterationPopup extends Component {
         orderline: { type: Object, optional: true },
         order: { type: Object, optional: true },
         close: Function,
-        getPayload: { type: Function, optional: true },
     };
 
     setup() {
@@ -84,31 +83,54 @@ export class AlterationPopup extends Component {
             return;
         }
 
+        // 1. Buscar el tipo de arreglo y su producto asociado
+        const altType = this.alterationTypes.find(
+            (t) => t.id === this.state.alterationTypeId
+        );
+        if (!altType || !altType.product_id) {
+            return;
+        }
+
+        // 2. Obtener el registro del producto desde los datos del POS
+        const product = this.pos.models["product.product"].get(altType.product_id.id);
+        if (!product) {
+            console.error("Producto de arreglo no encontrado en el POS:", altType.product_id.id);
+            return;
+        }
+
+        // 3. Añadir el producto de arreglo como nueva línea al pedido actual
         const order = this.props.order || this.pos.getOrder();
         const orderline = this.props.orderline;
 
-        const vals = {
-            alteration_type_id: this.state.alterationTypeId,
-            description: this.state.description,
-            date_promised: this.state.datePromised,
-            delivery_method: this.state.deliveryMethod,
-            cost: this.state.cost,
-            tailor_id: this.state.tailorId || false,
-            pos_order_id: order.id || false,
-            pos_order_line_id: orderline ? orderline.id || false : false,
-            partner_id: order.partner_id ? order.partner_id.id : false,
-            product_id: orderline ? orderline.product_id.id : false,
-        };
+        await this.pos.addLineToCurrentOrder(
+            {
+                product_tmpl_id: product.product_tmpl_id,
+                price_unit: altType.product_id.list_price,
+            },
+            {},
+            false
+        );
 
-        try {
-            const result = await this.pos.createAlteration(vals);
-            if (this.props.getPayload) {
-                this.props.getPayload(result);
+        // 4. Configurar la línea recién añadida con nota y referencia a la prenda
+        const newLine = order.getSelectedOrderline();
+        if (newLine) {
+            // Almacenar datos del arreglo en customer_note con formato parseable:
+            // "descripción|fecha_prometida|método_entrega"
+            const garmentName = orderline?.product_id?.display_name || "";
+            const noteDesc = this.state.description
+                ? `Arreglo para: ${garmentName}. ${this.state.description}`
+                : `Arreglo para: ${garmentName}`;
+            const noteData = `${noteDesc}|${this.state.datePromised}|${this.state.deliveryMethod}`;
+            newLine.setCustomerNote(noteData);
+
+            // Vincular la línea de arreglo a la línea de la prenda original
+            if (orderline) {
+                newLine.alteration_for_line_id = orderline;
             }
-            this.props.close();
-        } catch (error) {
-            console.error("Error creating alteration:", error);
         }
+
+        // 5. Cerrar el popup
+        this.props.close();
     }
 
     onClickCancel() {
