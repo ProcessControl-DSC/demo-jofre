@@ -120,7 +120,7 @@ export class FashionMatrixDialog extends Component {
                     const qty = parseFloat(cell.qty) || 0;
                     if (qty > 0) {
                         // Try to find matching color/size from the fashion data variant map
-                        const ptavIds = cell.ptav_ids.split(",").map(id => parseInt(id)).sort((a, b) => a - b);
+                        const ptavIds = (Array.isArray(cell.ptav_ids) ? cell.ptav_ids : String(cell.ptav_ids).split(",").map(id => parseInt(id))).sort((a, b) => a - b);
                         const matchKey = this._findVariantByPtavIds(fashionData, ptavIds);
                         if (matchKey) {
                             this.state.quantities[matchKey] = qty;
@@ -396,7 +396,7 @@ export class FashionMatrixDialog extends Component {
                     // product_template_attribute_value_ids. We match by checking
                     // if this cell's combination maps to the same product variant.
                     // Store the ptav_ids for each cell
-                    const ptavIds = cell.ptav_ids.split(",").map(id => parseInt(id));
+                    const ptavIds = Array.isArray(cell.ptav_ids) ? cell.ptav_ids : String(cell.ptav_ids).split(",").map(id => parseInt(id));
                     // Check if this cell was already populated with this color/size
                     // We'll use a heuristic: try all cells and see which one
                     // maps to the correct variant by matching ptav names/values.
@@ -446,7 +446,7 @@ export class FashionMatrixDialog extends Component {
         for (const row of this._standardRows) {
             for (const cell of row) {
                 if (cell.ptav_ids && cell.is_possible_combination) {
-                    const ptavIds = cell.ptav_ids.split(",").map(id => parseInt(id)).sort((a, b) => a - b);
+                    const ptavIds = (Array.isArray(cell.ptav_ids) ? cell.ptav_ids : String(cell.ptav_ids).split(",").map(id => parseInt(id))).sort((a, b) => a - b);
                     allPtavSets.push(ptavIds);
                 }
             }
@@ -549,7 +549,7 @@ export class FashionMatrixDialog extends Component {
                 if (cell.ptav_ids && cell.is_possible_combination && cell.qty) {
                     const qty = parseFloat(cell.qty) || 0;
                     if (qty > 0) {
-                        const ptavIds = cell.ptav_ids.split(",").map(id => parseInt(id)).sort((a, b) => a - b);
+                        const ptavIds = (Array.isArray(cell.ptav_ids) ? cell.ptav_ids : String(cell.ptav_ids).split(",").map(id => parseInt(id))).sort((a, b) => a - b);
                         const key = ptavIds.join(",");
                         const mapped = this._ptavMap[key];
                         if (mapped) {
