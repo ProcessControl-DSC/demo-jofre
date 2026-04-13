@@ -41,7 +41,7 @@ class ProductTemplate(models.Model):
     )
 
     @api.model
-    def _get_fashion_matrix_data(self, product_template_id):
+    def get_fashion_matrix_data(self, product_template_id):
         """Return all data needed to render the fashion matrix dialog.
 
         This method is called from the OWL component via RPC.
@@ -149,7 +149,7 @@ class ProductTemplate(models.Model):
         return result
 
     @api.model
-    def _get_distribution_profiles(self):
+    def get_distribution_profiles(self):
         """Return available distribution profiles for the matrix dialog."""
         profiles = self.env['store.distribution.profile'].search([('active', '=', True)])
         result = []

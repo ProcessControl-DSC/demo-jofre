@@ -90,7 +90,7 @@ export class FashionMatrixAction extends Component {
         // Load distribution profiles
         this.state.distributionProfiles = await this.orm.call(
             "product.template",
-            "_get_distribution_profiles",
+            "get_distribution_profiles",
             [],
         );
 
@@ -144,7 +144,7 @@ export class FashionMatrixAction extends Component {
         this.state.loading = true;
         const data = await this.orm.call(
             "product.template",
-            "_get_fashion_matrix_data",
+            "get_fashion_matrix_data",
             [productTemplateId],
         );
         this.state.product = data;
