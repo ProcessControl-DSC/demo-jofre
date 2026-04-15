@@ -21,6 +21,7 @@ export class TransferRequestPopup extends Component {
     setup() {
         this.pos = usePos();
         this.notification = useService("notification");
+        this.orm = useService("orm");
 
         const warehouses = this.props.availableWarehouses || [];
         const firstWh = warehouses.length > 0 ? warehouses[0] : null;
@@ -83,7 +84,16 @@ export class TransferRequestPopup extends Component {
         }
         this.state.isProcessing = true;
         try {
-            const result = await this.pos.data.call(
+            // Get dest warehouse from POS config
+            let destWhId = false;
+            const config = this.pos.config;
+            if (config.warehouse_id) {
+                destWhId = config.warehouse_id.id || config.warehouse_id;
+            } else if (config.picking_type_id?.warehouse_id) {
+                destWhId = config.picking_type_id.warehouse_id.id || config.picking_type_id.warehouse_id;
+            }
+
+            const result = await this.orm.call(
                 "stock.picking",
                 "create_transfer_from_pos",
                 [{
@@ -92,17 +102,25 @@ export class TransferRequestPopup extends Component {
                     product_template_id: this.props.productTemplate?.id || false,
                     qty: this.state.qty,
                     source_warehouse_name: this.state.selectedWarehouse,
-                    dest_warehouse_id: this.pos.getTransferWarehouseId(),
+                    dest_warehouse_id: destWhId,
                 }]
             );
-            this.notification.add(
-                _t("Traslado %s creado. Pendiente de preparacion.", result.name || ''),
-                { type: "success" }
-            );
+            if (result && result.name) {
+                this.notification.add(
+                    _t("Traslado %s creado. Pendiente de preparacion.", result.name),
+                    { type: "success" }
+                );
+            } else {
+                this.notification.add(
+                    _t("Traslado creado correctamente."),
+                    { type: "success" }
+                );
+            }
             this.props.close();
         } catch (error) {
+            console.error("Transfer creation error:", error);
             this.notification.add(
-                _t("Error al crear el traslado."),
+                _t("Error al crear el traslado: ") + (error.message || error.data?.message || ''),
                 { type: "danger" }
             );
             this.state.isProcessing = false;
