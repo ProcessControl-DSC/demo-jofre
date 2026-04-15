@@ -187,7 +187,11 @@ export class AlterationPopup extends Component {
             // Referencia del pedido
             const orderRef = order.name || "";
 
+            // Logo de la empresa (base64)
+            const companyLogo = company ? company.logo : false;
+
             const alterationData = {
+                company_logo: companyLogo,
                 store_name: storeName,
                 store_address: storeAddress,
                 date: new Date().toLocaleString("es-ES"),

@@ -49,7 +49,7 @@ export class AlterationReceipt extends Component {
             return "Recogida en tienda";
         }
         if (method === "ship_customer") {
-            return "Envío a domicilio";
+            return "Envio a domicilio";
         }
         return "";
     }

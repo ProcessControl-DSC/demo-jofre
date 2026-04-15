@@ -76,44 +76,149 @@
     }
 }
 
-/* Receipt */
+/* ============================================================
+   Receipt — optimizado para impresoras termicas 80mm
+   Ancho util: ~72mm (~380px). Font base: 14px.
+   ============================================================ */
 .alteration-receipt {
-    font-family: monospace;
-    font-size: 12px;
-    max-width: 300px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    width: 100%;
+    max-width: 380px;
     margin: 0 auto;
-    padding: 10px;
+    padding: 12px 8px;
+    color: #000;
 
+    /* ---------- Logo ---------- */
+    .receipt-logo {
+        text-align: center;
+        margin-bottom: 10px;
+
+        img {
+            max-width: 160px;
+            max-height: 80px;
+            display: inline-block;
+        }
+    }
+
+    /* ---------- Header tienda ---------- */
     .receipt-header {
         text-align: center;
-        border-bottom: 1px dashed #000;
-        padding-bottom: 8px;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
+    }
+
+    .receipt-store-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 2px;
+    }
+
+    .receipt-store-address {
+        font-size: 12px;
+        color: #333;
+    }
+
+    /* ---------- Titulo principal ---------- */
+    .receipt-title-bar {
+        text-align: center;
+        border-top: 2px solid #000;
+        border-bottom: 2px solid #000;
+        padding: 8px 0;
+        margin-bottom: 10px;
     }
 
     .receipt-title {
-        font-size: 16px;
+        font-size: 20px;
         font-weight: bold;
+        letter-spacing: 2px;
     }
 
-    .receipt-section {
+    /* ---------- Fecha/hora ---------- */
+    .receipt-datetime {
+        text-align: center;
+        font-size: 13px;
+        color: #444;
         margin-bottom: 8px;
-        padding-bottom: 8px;
-        border-bottom: 1px dashed #ccc;
+    }
+
+    /* ---------- Referencia pedido ---------- */
+    .receipt-reference {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    /* ---------- Separadores ---------- */
+    .receipt-separator {
+        border-top: 1px dashed #000;
+        margin: 10px 0;
+    }
+
+    /* ---------- Secciones ---------- */
+    .receipt-section {
+        margin-bottom: 6px;
+    }
+
+    .receipt-section-title {
+        font-size: 15px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+        padding-bottom: 2px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    /* ---------- Filas clave-valor ---------- */
+    .receipt-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
+        font-size: 14px;
     }
 
     .receipt-label {
         font-weight: bold;
-        display: inline-block;
-        min-width: 80px;
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+
+    .receipt-value {
+        flex: 1;
+        word-break: break-word;
+    }
+
+    .receipt-notes .receipt-value {
+        font-size: 14px;
+        white-space: pre-wrap;
+    }
+
+    /* ---------- Footer ---------- */
+    .receipt-footer-bar {
+        border-top: 2px solid #000;
+        margin: 12px 0 8px 0;
     }
 
     .receipt-footer {
         text-align: center;
-        margin-top: 12px;
-        padding-top: 8px;
-        border-top: 1px dashed #000;
-        font-style: italic;
-        font-size: 11px;
+        margin-bottom: 6px;
+    }
+
+    .receipt-footer-main {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .receipt-footer-sub {
+        font-size: 14px;
+    }
+
+    .receipt-footer-ref {
+        text-align: center;
+        font-size: 12px;
+        color: #555;
+        margin-top: 4px;
     }
 }

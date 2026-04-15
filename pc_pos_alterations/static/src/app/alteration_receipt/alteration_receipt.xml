@@ -2,115 +2,130 @@
 <templates id="template" xml:space="preserve">
 
     <t t-name="pc_pos_alterations.AlterationReceipt">
-        <div class="pos-receipt alteration-receipt" style="font-family: monospace; width: 100%; max-width: 300px; margin: 0 auto; padding: 10px;">
+        <div class="pos-receipt alteration-receipt">
+
+            <!-- ============ LOGO EMPRESA ============ -->
+            <t t-if="props.alteration.company_logo">
+                <div class="receipt-logo">
+                    <img t-att-src="'data:image/png;base64,' + props.alteration.company_logo"
+                         alt="Logo"/>
+                </div>
+            </t>
 
             <!-- ============ HEADER: Tienda ============ -->
-            <div class="text-center" style="margin-bottom: 8px;">
+            <div class="receipt-header">
                 <t t-if="storeName">
-                    <div class="fw-bold" style="font-size: 1.3em;">
+                    <div class="receipt-store-name">
                         <t t-esc="storeName"/>
                     </div>
                 </t>
                 <t t-if="storeAddress">
-                    <div style="font-size: 0.85em; color: #333;">
+                    <div class="receipt-store-address">
                         <t t-esc="storeAddress"/>
                     </div>
                 </t>
             </div>
 
             <!-- ============ TITULO ============ -->
-            <div class="text-center" style="border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 6px 0; margin-bottom: 8px;">
-                <div class="fw-bold" style="font-size: 1.4em; letter-spacing: 1px;">ARREGLO DE PRENDA</div>
+            <div class="receipt-title-bar">
+                <div class="receipt-title">ARREGLO DE PRENDA</div>
             </div>
 
             <!-- ============ FECHA/HORA ============ -->
-            <div class="text-center" style="margin-bottom: 8px; font-size: 0.85em; color: #555;">
+            <div class="receipt-datetime">
                 <t t-esc="currentDateTime"/>
             </div>
 
             <!-- ============ REFERENCIA ============ -->
             <t t-if="orderReference">
-                <div class="text-center" style="margin-bottom: 8px;">
-                    <div class="fw-bold" style="font-size: 1.2em;">
-                        <t t-esc="orderReference"/>
-                    </div>
+                <div class="receipt-reference">
+                    <t t-esc="orderReference"/>
                 </div>
             </t>
 
-            <div style="border-top: 1px solid #000; margin: 8px 0;"/>
+            <div class="receipt-separator"/>
 
             <!-- ============ CLIENTE ============ -->
-            <div style="margin-bottom: 4px;">
-                <span class="fw-bold">Cliente: </span>
-                <span t-esc="customerName"/>
-            </div>
-            <t t-if="customerPhone">
-                <div style="margin-bottom: 8px;">
-                    <span class="fw-bold">Tel: </span>
-                    <span t-esc="customerPhone"/>
+            <div class="receipt-section">
+                <div class="receipt-section-title">CLIENTE</div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Nombre:</span>
+                    <span class="receipt-value" t-esc="customerName"/>
                 </div>
-            </t>
-
-            <div style="border-top: 1px solid #000; margin: 8px 0;"/>
-
-            <!-- ============ PRODUCTO (prenda) ============ -->
-            <div style="margin-bottom: 4px;">
-                <span class="fw-bold">Prenda: </span>
-                <span t-esc="productName"/>
+                <t t-if="customerPhone">
+                    <div class="receipt-row">
+                        <span class="receipt-label">Tel:</span>
+                        <span class="receipt-value" t-esc="customerPhone"/>
+                    </div>
+                </t>
             </div>
-            <t t-if="productRef">
-                <div style="margin-bottom: 8px; font-size: 0.85em; color: #555;">
-                    <span class="fw-bold">Ref: </span>
-                    <span t-esc="productRef"/>
-                </div>
-            </t>
 
-            <div style="border-top: 1px solid #000; margin: 8px 0;"/>
+            <div class="receipt-separator"/>
+
+            <!-- ============ PRENDA ============ -->
+            <div class="receipt-section">
+                <div class="receipt-section-title">PRENDA</div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Producto:</span>
+                    <span class="receipt-value" t-esc="productName"/>
+                </div>
+                <t t-if="productRef">
+                    <div class="receipt-row">
+                        <span class="receipt-label">Ref:</span>
+                        <span class="receipt-value" t-esc="productRef"/>
+                    </div>
+                </t>
+            </div>
+
+            <div class="receipt-separator"/>
 
             <!-- ============ DETALLES DEL ARREGLO ============ -->
-            <t t-if="alterationType">
-                <div style="margin-bottom: 4px;">
-                    <span class="fw-bold">Tipo: </span>
-                    <span t-esc="alterationType"/>
-                </div>
-            </t>
-            <t t-if="description">
-                <div style="margin-bottom: 4px;">
-                    <span class="fw-bold">Notas: </span>
-                    <span t-esc="description"/>
-                </div>
-            </t>
-            <t t-if="formattedDatePromised">
-                <div style="margin-bottom: 4px;">
-                    <span class="fw-bold">Fecha entrega: </span>
-                    <span t-esc="formattedDatePromised"/>
-                </div>
-            </t>
-            <t t-if="deliveryMethodText">
-                <div style="margin-bottom: 4px;">
-                    <span class="fw-bold">Entrega: </span>
-                    <span t-esc="deliveryMethodText"/>
-                </div>
-            </t>
+            <div class="receipt-section">
+                <div class="receipt-section-title">DETALLES DEL ARREGLO</div>
+                <t t-if="alterationType">
+                    <div class="receipt-row">
+                        <span class="receipt-label">Tipo:</span>
+                        <span class="receipt-value" t-esc="alterationType"/>
+                    </div>
+                </t>
+                <t t-if="description">
+                    <div class="receipt-row receipt-notes">
+                        <span class="receipt-label">Notas:</span>
+                        <span class="receipt-value" t-esc="description"/>
+                    </div>
+                </t>
+                <t t-if="formattedDatePromised">
+                    <div class="receipt-row">
+                        <span class="receipt-label">Fecha:</span>
+                        <span class="receipt-value" t-esc="formattedDatePromised"/>
+                    </div>
+                </t>
+                <t t-if="deliveryMethodText">
+                    <div class="receipt-row">
+                        <span class="receipt-label">Entrega:</span>
+                        <span class="receipt-value" t-esc="deliveryMethodText"/>
+                    </div>
+                </t>
+            </div>
 
-            <!-- ============ ESTADO (solo si viene del backend) ============ -->
+            <!-- ============ ESTADO ============ -->
             <t t-if="stateLabel">
-                <div style="margin-bottom: 4px;">
-                    <span class="fw-bold">Estado: </span>
-                    <span t-esc="stateLabel"/>
+                <div class="receipt-row">
+                    <span class="receipt-label">Estado:</span>
+                    <span class="receipt-value" t-esc="stateLabel"/>
                 </div>
             </t>
 
             <!-- ============ FOOTER ============ -->
-            <div style="border-top: 2px dashed #000; margin: 10px 0;"/>
+            <div class="receipt-footer-bar"/>
 
-            <div class="text-center" style="margin-top: 8px;">
-                <div class="fw-bold" style="font-size: 0.95em;">Conserve este ticket</div>
-                <div style="font-size: 0.85em;">para recoger su prenda.</div>
+            <div class="receipt-footer">
+                <div class="receipt-footer-main">Conserve este ticket</div>
+                <div class="receipt-footer-sub">para recoger su prenda.</div>
             </div>
 
             <t t-if="orderReference">
-                <div class="text-center" style="margin-top: 6px; font-size: 0.8em; color: #666;">
+                <div class="receipt-footer-ref">
                     Ref. pedido: <t t-esc="orderReference"/>
                 </div>
             </t>

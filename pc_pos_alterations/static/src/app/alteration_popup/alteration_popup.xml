@@ -39,6 +39,7 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold">Descripción / Notas</label>
                     <textarea class="form-control" rows="3"
+                              inputmode="text"
                               placeholder="Ej: Acortar 3cm pierna derecha, estrechar cintura 2cm..."
                               t-on-input="onDescriptionChange"
                               t-att-value="state.description"/>
