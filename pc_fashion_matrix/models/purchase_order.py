@@ -202,7 +202,7 @@ class PurchaseOrder(models.Model):
                     'name': po_line.product_id.display_name,
                     'product_id': po_line.product_id.id,
                     'product_uom_qty': qty,
-                    'product_uom': po_line.product_uom.id,
+                    'product_uom': po_line.product_uom_id.id,
                     'location_id': central_warehouse.lot_stock_id.id,
                     'location_dest_id': warehouse.lot_stock_id.id,
                 })
