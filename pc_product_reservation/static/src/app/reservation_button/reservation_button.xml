@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
 
-    <!-- Add "Reservar" button above the "Pay" button on the ProductScreen -->
-    <t t-name="pc_product_reservation.ProductScreen" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
-        <xpath expr="//button[hasclass('pay-button')]" position="before">
-            <button class="btn btn-lg py-3 w-100 mb-2 d-flex align-items-center justify-content-center gap-2"
-                style="background-color: #e67e22; color: white; font-size: 1.2rem; font-weight: 700; border: none; border-radius: 8px; min-height: 56px;"
-                t-on-click="() => this.onClickReserve()">
-                <i class="fa fa-bookmark fa-lg"/>
-                <span>RESERVAR</span>
+    <!-- Add "Reservar" button in the ActionpadWidget, alongside Customer/Note/Alteration -->
+    <t t-name="pc_product_reservation.ActionpadWidget" t-inherit="point_of_sale.ActionpadWidget" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('actionpad')]" position="inside">
+            <button class="btn btn-lg d-flex align-items-center justify-content-center gap-2"
+                style="background-color: #e67e22; color: white; font-weight: 700;"
+                t-on-click="onClickReserve">
+                <i class="fa fa-bookmark"/>
+                <span>Reservar</span>
             </button>
         </xpath>
     </t>
