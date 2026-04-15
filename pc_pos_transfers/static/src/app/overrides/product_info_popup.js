@@ -53,9 +53,9 @@ patch(PosStore.prototype, {
     },
 
     _extractProductNameFromPopup() {
-        const modalBody = document.querySelector('.modal-body');
-        if (!modalBody) return '';
-        const h4 = modalBody.querySelector('.h4');
+        
+        
+        const h4 = document.querySelector('.modal-header');
         if (h4) {
             const text = h4.textContent || '';
             return text.split('|')[0].trim();
