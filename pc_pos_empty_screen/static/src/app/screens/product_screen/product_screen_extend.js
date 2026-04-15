@@ -5,10 +5,11 @@ import { ProductScreen } from "@point_of_sale/app/screens/product_screen/product
 
 patch(ProductScreen.prototype, {
     get productsToDisplay() {
-        // If no category selected and no search, show nothing
-        if (!this.pos.selectedCategory?.id && !this.searchWord) {
+        const result = super.productsToDisplay;
+        // If no category is actively selected, hide all products
+        if (!this.pos.selectedCategory) {
             return [];
         }
-        return super.productsToDisplay;
+        return result;
     },
 });
