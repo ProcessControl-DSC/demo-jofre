@@ -32,6 +32,17 @@ class StockPicking(models.Model):
         dest_wh_id = vals.get('dest_warehouse_id')
         user_name = vals.get('user_name', '')
 
+        # Resolve product by name if no ID provided
+        if not product_id and not product_template_id and vals.get("product_name"):
+            product_name = vals["product_name"]
+            # Try exact match first, then ilike
+            template = self.env["product.template"].search([
+                ("name", "ilike", product_name),
+            ], limit=1)
+            if template and template.product_variant_ids:
+                product_id = template.product_variant_ids[0].id
+                product_template_id = template.id
+
         # Resolve product_id from template if not provided directly
         if not product_id and product_template_id:
             template = self.env['product.template'].browse(product_template_id)
