@@ -12,17 +12,13 @@ patch(ProductInfoPopup.prototype, {
         this._observer = null;
 
         onMounted(() => {
-            // Watch for accordion content appearing (when user clicks "Inventario")
-            this._observer = new MutationObserver(() => {
-                this._injectTransferButtons();
-            });
-            // Observe the entire modal for changes (accordion expand/collapse)
+            this._injectTransferButton();
+            // Observer in case the title section renders late
+            this._observer = new MutationObserver(() => this._injectTransferButton());
             const modal = document.querySelector('.modal-body');
             if (modal) {
-                this._observer.observe(modal, { childList: true, subtree: true, attributes: true });
+                this._observer.observe(modal, { childList: true, subtree: true });
             }
-            // Also try immediately in case accordion is already open
-            this._injectTransferButtons();
         });
 
         onWillUnmount(() => {
@@ -33,35 +29,23 @@ patch(ProductInfoPopup.prototype, {
         });
     },
 
-    _injectTransferButtons() {
-        const container = document.querySelector('.accordion-content .border-start');
-        if (!container) return;
-        if (container.querySelector('.transfer-request-btn')) return;
+    _injectTransferButton() {
+        // Find the title section with "Disponible: X Unidades"
+        const titleSection = document.querySelector('.section-product-info-title');
+        if (!titleSection) return;
+        if (titleSection.querySelector('.transfer-main-btn')) return;
 
-        const rows = container.querySelectorAll(':scope > .d-flex.gap-2');
-        rows.forEach((row) => {
-            const divs = row.querySelectorAll(':scope > div');
-            if (divs.length < 2) return;
-
-            const whName = divs[0].textContent.replace(':', '').trim();
-            const qtyText = divs[1].querySelector('.fw-bolder')?.textContent?.trim();
-            const qty = parseFloat(qtyText) || 0;
-
-            if (qty > 0) {
-                const btnDiv = document.createElement('div');
-                btnDiv.className = 'ms-auto';
-                btnDiv.innerHTML = '<button class="btn btn-sm btn-outline-primary py-0 px-2 transfer-request-btn"><i class="fa fa-arrow-right me-1"></i>Solicitar</button>';
-                btnDiv.querySelector('button').addEventListener('click', (ev) => {
-                    ev.stopPropagation();
-                    this._openTransferRequest(whName, qty);
-                });
-                row.classList.add('align-items-center');
-                row.appendChild(btnDiv);
-            }
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-sm btn-outline-primary transfer-main-btn mt-2';
+        btn.innerHTML = '<i class="fa fa-exchange me-1"></i>Solicitar traslado de otra tienda';
+        btn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            this._openTransferRequest();
         });
+        titleSection.appendChild(btn);
     },
 
-    _openTransferRequest(warehouseName, availableQty) {
+    _openTransferRequest() {
         const productTemplate = this.props.productTemplate;
 
         let productId = false;
@@ -78,11 +62,26 @@ patch(ProductInfoPopup.prototype, {
             }
         }
 
+        // Get warehouse info from accordion if available
+        const warehouses = [];
+        const rows = document.querySelectorAll('.accordion-content .border-start > .d-flex.gap-2');
+        rows.forEach((row) => {
+            const divs = row.querySelectorAll(':scope > div');
+            if (divs.length < 2) return;
+            const whName = divs[0].textContent.replace(':', '').trim();
+            const qtyText = divs[1].querySelector('.fw-bolder')?.textContent?.trim();
+            const qty = parseFloat(qtyText) || 0;
+            if (qty > 0) {
+                warehouses.push({ name: whName, qty: qty });
+            }
+        });
+
         this.dialogService.add(TransferRequestPopup, {
             productTemplate: productTemplate,
             productId: productId,
-            warehouseName: warehouseName,
-            availableQty: availableQty,
+            warehouseName: warehouses.length > 0 ? warehouses[0].name : '',
+            availableQty: warehouses.length > 0 ? warehouses[0].qty : 0,
+            availableWarehouses: warehouses,
             close: () => {},
         });
     },
