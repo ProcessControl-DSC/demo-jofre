@@ -2,24 +2,15 @@
 <templates id="template" xml:space="preserve">
 
     <t t-name="pc_pos_transfers.ProductInfoPopup" t-inherit="point_of_sale.ProductInfoPopup" t-inherit-mode="extension">
-        <xpath expr="//div[hasclass('section-inventory-body')]" position="replace">
-            <div class="section-inventory-body">
+        <xpath expr="//div[hasclass('accordion-content')]//div[hasclass('border-start')]" position="replace">
+            <div class="border-start border-info text-muted small text-muted d-flex flex-column ps-2 ms-1">
                 <t t-foreach="props.info.productInfo.warehouses" t-as="warehouse" t-key="warehouse.name">
-                    <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center mb-1">
-                        <div>
-                            <t t-esc="warehouse.name" class="table-name"/>
-                            :
-                        </div>
-                        <div>
-                            <span class="me-1 fw-bolder"><t t-esc="warehouse.free_qty" class="table-name"/></span>
-                            <t t-esc="warehouse.uom"/> available,
-                        </div>
-                        <div>
-                            <span class="me-1 fw-bolder"><t t-esc="warehouse.forecasted_quantity"/></span>
-                            forecasted
-                        </div>
-                        <div t-if="canRequestFromWarehouse(warehouse)" class="ms-auto">
-                            <button class="btn btn-sm btn-outline-primary transfer-request-btn"
+                    <div class="d-flex gap-2 align-items-center">
+                        <div><t t-esc="warehouse.name"/> : </div>
+                        <div><span class="me-1 fw-bolder" t-esc="warehouse.free_qty"/>Unidades disponible, </div>
+                        <div><span class="me-1 fw-bolder" t-esc="warehouse.forecasted_quantity"/> previsto </div>
+                        <div t-if="warehouse.free_qty > 0" class="ms-auto">
+                            <button class="btn btn-sm btn-outline-primary py-0 px-2"
                                     t-on-click="() => this.onClickRequestTransfer(warehouse)">
                                 <i class="fa fa-arrow-right me-1"/>Solicitar
                             </button>
