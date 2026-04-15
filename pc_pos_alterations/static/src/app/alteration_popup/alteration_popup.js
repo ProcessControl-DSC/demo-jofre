@@ -2,7 +2,9 @@
 import { Component, useState } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
 import { usePos } from "@point_of_sale/app/hooks/pos_hook";
+import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
+import { AlterationReceipt } from "@pc_pos_alterations/app/alteration_receipt/alteration_receipt";
 
 export class AlterationPopup extends Component {
     static template = "pc_pos_alterations.AlterationPopup";
@@ -15,6 +17,7 @@ export class AlterationPopup extends Component {
 
     setup() {
         this.pos = usePos();
+        this.printer = useService("printer");
         const alterationTypes = this.pos.models["alteration.type"].getAll();
         const defaultType = alterationTypes.length > 0 ? alterationTypes[0] : null;
         const defaultDays = defaultType ? defaultType.default_duration_days : 3;
@@ -129,8 +132,84 @@ export class AlterationPopup extends Component {
             }
         }
 
-        // 5. Cerrar el popup
+        // 5. Imprimir ticket del arreglo en la impresora de recibos
+        await this._printAlterationReceipt(altType, orderline, order);
+
+        // 6. Cerrar el popup
         this.props.close();
+    }
+
+    /**
+     * Construye los datos del arreglo e imprime el ticket en la impresora
+     * de recibos del TPV (IoT o web fallback).
+     */
+    async _printAlterationReceipt(altType, orderline, order) {
+        try {
+            // Datos de la tienda
+            const company = this.pos.company;
+            const config = this.pos.config;
+            let storeName = "";
+            let storeAddress = "";
+
+            // Intentar obtener nombre de la tienda desde el picking_type (almacén)
+            if (config.picking_type_id && config.picking_type_id.warehouse_id) {
+                storeName = config.picking_type_id.warehouse_id.name || "";
+            }
+            if (!storeName && company) {
+                storeName = company.name || "";
+            }
+
+            // Construir dirección de la tienda desde la compañía
+            if (company) {
+                const addressParts = [];
+                if (company.street) {
+                    addressParts.push(company.street);
+                }
+                if (company.city) {
+                    addressParts.push(company.city);
+                }
+                if (company.zip) {
+                    addressParts.push(company.zip);
+                }
+                storeAddress = addressParts.join(", ");
+            }
+
+            // Datos del cliente
+            const partner = order.partner_id;
+            const partnerName = partner ? partner.name : "Sin identificar";
+            const partnerPhone = partner ? (partner.phone || partner.mobile || "") : "";
+
+            // Datos del producto (la prenda)
+            const product = orderline ? orderline.product_id : null;
+            const productName = product ? product.display_name : "N/A";
+            const productRef = product ? (product.barcode || product.default_code || "") : "";
+
+            // Referencia del pedido
+            const orderRef = order.name || "";
+
+            const alterationData = {
+                store_name: storeName,
+                store_address: storeAddress,
+                date: new Date().toLocaleString("es-ES"),
+                partner_name: partnerName,
+                partner_phone: partnerPhone,
+                product_name: productName,
+                product_ref: productRef,
+                alteration_type: altType.name || "",
+                description: this.state.description || "",
+                date_promised: this.state.datePromised || "",
+                delivery_method: this.state.deliveryMethod || "",
+                order_ref: orderRef,
+            };
+
+            await this.printer.print(
+                AlterationReceipt,
+                { alteration: alterationData },
+                { webPrintFallback: true }
+            );
+        } catch (e) {
+            console.warn("No se pudo imprimir el ticket de arreglo:", e);
+        }
     }
 
     onClickCancel() {

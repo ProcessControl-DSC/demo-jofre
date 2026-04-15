@@ -2,86 +2,119 @@
 <templates id="template" xml:space="preserve">
 
     <t t-name="pc_pos_alterations.AlterationReceipt">
-        <div class="pos-receipt alteration-receipt" style="font-family: monospace; width: 100%;">
-            <!-- Header tienda -->
-            <div class="pos-receipt-contact text-center mb-2">
-                <t t-if="props.alteration.warehouse_name">
-                    <div class="fw-bold" style="font-size: 1.2em;">
-                        <t t-esc="props.alteration.warehouse_name"/>
+        <div class="pos-receipt alteration-receipt" style="font-family: monospace; width: 100%; max-width: 300px; margin: 0 auto; padding: 10px;">
+
+            <!-- ============ HEADER: Tienda ============ -->
+            <div class="text-center" style="margin-bottom: 8px;">
+                <t t-if="storeName">
+                    <div class="fw-bold" style="font-size: 1.3em;">
+                        <t t-esc="storeName"/>
+                    </div>
+                </t>
+                <t t-if="storeAddress">
+                    <div style="font-size: 0.85em; color: #333;">
+                        <t t-esc="storeAddress"/>
                     </div>
                 </t>
             </div>
 
-            <div class="text-center mb-2" style="border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 4px 0;">
-                <div class="fw-bold" style="font-size: 1.3em;">TICKET DE ARREGLO</div>
+            <!-- ============ TITULO ============ -->
+            <div class="text-center" style="border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 6px 0; margin-bottom: 8px;">
+                <div class="fw-bold" style="font-size: 1.4em; letter-spacing: 1px;">ARREGLO DE PRENDA</div>
             </div>
 
-            <!-- Referencia -->
-            <div class="text-center mb-2">
-                <div class="fw-bold" style="font-size: 1.4em;">
-                    <t t-esc="props.alteration.name"/>
+            <!-- ============ FECHA/HORA ============ -->
+            <div class="text-center" style="margin-bottom: 8px; font-size: 0.85em; color: #555;">
+                <t t-esc="currentDateTime"/>
+            </div>
+
+            <!-- ============ REFERENCIA ============ -->
+            <t t-if="orderReference">
+                <div class="text-center" style="margin-bottom: 8px;">
+                    <div class="fw-bold" style="font-size: 1.2em;">
+                        <t t-esc="orderReference"/>
+                    </div>
                 </div>
-            </div>
+            </t>
 
-            <div style="border-top: 1px solid #000;" class="my-2"/>
+            <div style="border-top: 1px solid #000; margin: 8px 0;"/>
 
-            <!-- Cliente -->
-            <div class="mb-1">
+            <!-- ============ CLIENTE ============ -->
+            <div style="margin-bottom: 4px;">
                 <span class="fw-bold">Cliente: </span>
-                <span t-esc="props.alteration.partner_name || 'Sin identificar'"/>
+                <span t-esc="customerName"/>
             </div>
-            <div class="mb-2" t-if="props.alteration.partner_phone">
-                <span class="fw-bold">Tel: </span>
-                <span t-esc="props.alteration.partner_phone"/>
+            <t t-if="customerPhone">
+                <div style="margin-bottom: 8px;">
+                    <span class="fw-bold">Tel: </span>
+                    <span t-esc="customerPhone"/>
+                </div>
+            </t>
+
+            <div style="border-top: 1px solid #000; margin: 8px 0;"/>
+
+            <!-- ============ PRODUCTO (prenda) ============ -->
+            <div style="margin-bottom: 4px;">
+                <span class="fw-bold">Prenda: </span>
+                <span t-esc="productName"/>
+            </div>
+            <t t-if="productRef">
+                <div style="margin-bottom: 8px; font-size: 0.85em; color: #555;">
+                    <span class="fw-bold">Ref: </span>
+                    <span t-esc="productRef"/>
+                </div>
+            </t>
+
+            <div style="border-top: 1px solid #000; margin: 8px 0;"/>
+
+            <!-- ============ DETALLES DEL ARREGLO ============ -->
+            <t t-if="alterationType">
+                <div style="margin-bottom: 4px;">
+                    <span class="fw-bold">Tipo: </span>
+                    <span t-esc="alterationType"/>
+                </div>
+            </t>
+            <t t-if="description">
+                <div style="margin-bottom: 4px;">
+                    <span class="fw-bold">Notas: </span>
+                    <span t-esc="description"/>
+                </div>
+            </t>
+            <t t-if="formattedDatePromised">
+                <div style="margin-bottom: 4px;">
+                    <span class="fw-bold">Fecha entrega: </span>
+                    <span t-esc="formattedDatePromised"/>
+                </div>
+            </t>
+            <t t-if="deliveryMethodText">
+                <div style="margin-bottom: 4px;">
+                    <span class="fw-bold">Entrega: </span>
+                    <span t-esc="deliveryMethodText"/>
+                </div>
+            </t>
+
+            <!-- ============ ESTADO (solo si viene del backend) ============ -->
+            <t t-if="stateLabel">
+                <div style="margin-bottom: 4px;">
+                    <span class="fw-bold">Estado: </span>
+                    <span t-esc="stateLabel"/>
+                </div>
+            </t>
+
+            <!-- ============ FOOTER ============ -->
+            <div style="border-top: 2px dashed #000; margin: 10px 0;"/>
+
+            <div class="text-center" style="margin-top: 8px;">
+                <div class="fw-bold" style="font-size: 0.95em;">Conserve este ticket</div>
+                <div style="font-size: 0.85em;">para recoger su prenda.</div>
             </div>
 
-            <div style="border-top: 1px solid #000;" class="my-2"/>
+            <t t-if="orderReference">
+                <div class="text-center" style="margin-top: 6px; font-size: 0.8em; color: #666;">
+                    Ref. pedido: <t t-esc="orderReference"/>
+                </div>
+            </t>
 
-            <!-- Producto -->
-            <div class="mb-1">
-                <span class="fw-bold">Producto: </span>
-                <span t-esc="props.alteration.product_name || 'N/A'"/>
-            </div>
-
-            <!-- Tipo arreglo -->
-            <div class="mb-1" t-if="props.alteration.alteration_type">
-                <span class="fw-bold">Tipo: </span>
-                <span t-esc="props.alteration.alteration_type"/>
-            </div>
-
-            <!-- Descripción -->
-            <div class="mb-1" t-if="props.alteration.description">
-                <span class="fw-bold">Notas: </span>
-                <span t-esc="props.alteration.description"/>
-            </div>
-
-            <!-- Estado -->
-            <div class="mb-1">
-                <span class="fw-bold">Estado: </span>
-                <span t-esc="stateLabel"/>
-            </div>
-
-            <div style="border-top: 1px solid #000;" class="my-2"/>
-
-            <!-- Fecha -->
-            <div class="mb-1">
-                <span class="fw-bold">Fecha entrega: </span>
-                <span t-esc="formattedDate"/>
-            </div>
-
-            <!-- Método entrega -->
-            <div class="mb-1">
-                <span class="fw-bold">Entrega: </span>
-                <span t-esc="deliveryMethodText"/>
-            </div>
-
-            <div style="border-top: 2px dashed #000;" class="my-2"/>
-
-            <!-- Footer -->
-            <div class="text-center mt-2">
-                <div class="fw-bold">Conserve este ticket.</div>
-                <div>Necesario para recoger su prenda.</div>
-            </div>
         </div>
     </t>
 
