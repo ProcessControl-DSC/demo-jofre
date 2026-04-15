@@ -1,0 +1,91 @@
+/* ============================================================
+   PC POS Transfers — Styles
+   Process Control
+   ============================================================ */
+
+/* Transfer request button in product info popup */
+.transfer-request-btn {
+    font-size: 0.8rem;
+    padding: 2px 10px;
+    white-space: nowrap;
+    border-color: #2F5496;
+    color: #2F5496;
+
+    &:hover {
+        background-color: #2F5496;
+        border-color: #2F5496;
+        color: white;
+    }
+}
+
+/* Transfer request popup */
+.transfer-request-popup {
+    .transfer-qty-input {
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-align: center;
+
+        /* Remove spinner arrows */
+        -moz-appearance: textfield;
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    }
+}
+
+/* Transfer screen (dialog) */
+.transfer-screen {
+    background: #fff;
+
+    /* Left panel list */
+    .transfer-list {
+        table {
+            th {
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+                color: #666;
+            }
+
+            td {
+                vertical-align: middle;
+            }
+
+            tr {
+                transition: background-color 0.1s ease;
+            }
+        }
+    }
+
+    /* Right panel detail */
+    .transfer-detail {
+        h4 {
+            color: #2F5496;
+        }
+
+        .badge {
+            font-size: 0.85rem;
+        }
+    }
+
+    /* State badge colors (override bootstrap if needed) */
+    .badge.text-bg-warning {
+        color: #664d03 !important;
+    }
+}
+
+/* Responsive adjustments for POS on smaller screens */
+@media (max-width: 768px) {
+    .transfer-screen {
+        .transfer-list {
+            width: 100% !important;
+            min-width: auto !important;
+        }
+
+        .transfer-detail {
+            width: 100% !important;
+        }
+    }
+}

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pc_pos_transfers.TransferScreen">
+        <Dialog title="'Traslados entre tiendas'" size="'xl'">
+            <div class="transfer-screen d-flex flex-column" style="min-height: 70vh;">
+
+                <!-- Toolbar: filters + search + refresh -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2 border-bottom">
+                    <!-- Filter tabs -->
+                    <div class="d-flex gap-1 flex-wrap">
+                        <button t-attf-class="btn btn-sm {{ state.activeFilter === 'all' ? 'btn-dark' : 'btn-outline-secondary' }}"
+                                t-on-click="() => this.onFilterChange('all')">
+                            Todos
+                        </button>
+                        <button t-attf-class="btn btn-sm {{ state.activeFilter === 'pending' ? 'btn-warning' : 'btn-outline-secondary' }}"
+                                t-on-click="() => this.onFilterChange('pending')">
+                            <i class="fa fa-clock-o me-1"/>Pendientes
+                        </button>
+                        <button t-attf-class="btn btn-sm {{ state.activeFilter === 'shipped' ? 'btn-primary' : 'btn-outline-secondary' }}"
+                                t-on-click="() => this.onFilterChange('shipped')">
+                            <i class="fa fa-truck me-1"/>En camino
+                        </button>
+                        <button t-attf-class="btn btn-sm {{ state.activeFilter === 'received' ? 'btn-success' : 'btn-outline-secondary' }}"
+                                t-on-click="() => this.onFilterChange('received')">
+                            <i class="fa fa-check me-1"/>Recibidos
+                        </button>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Search -->
+                        <div class="input-group" style="max-width: 300px;">
+                            <span class="input-group-text"><i class="fa fa-search"/></span>
+                            <input type="text" class="form-control"
+                                   placeholder="Buscar referencia, producto..."
+                                   t-on-input="onSearchInput"
+                                   t-att-value="state.searchText"/>
+                        </div>
+                        <button class="btn btn-outline-secondary btn-sm" t-on-click="onClickRefresh">
+                            <i class="fa fa-refresh me-1"/>Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading state -->
+                <div t-if="state.isLoading"
+                     class="d-flex justify-content-center align-items-center flex-grow-1 py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <span class="ms-3 text-muted">Cargando traslados...</span>
+                </div>
+
+                <!-- Empty state -->
+                <div t-elif="state.filteredTransfers.length === 0"
+                     class="d-flex flex-column justify-content-center align-items-center flex-grow-1 text-muted py-5">
+                    <i class="fa fa-exchange fa-4x mb-3"/>
+                    <p class="fs-5 mb-1">No hay traslados para mostrar</p>
+                    <p class="small text-center">
+                        Los traslados solicitados desde el TPV aparecerán aquí.
+                    </p>
+                </div>
+
+                <!-- Main content: list + detail -->
+                <div t-else="" class="d-flex flex-grow-1 overflow-hidden">
+                    <!-- Left panel: transfer list -->
+                    <div class="transfer-list overflow-auto border-end" style="width: 55%; min-width: 350px;">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Referencia</th>
+                                    <th>Producto</th>
+                                    <th>Origen</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="state.filteredTransfers" t-as="transfer" t-key="transfer.id">
+                                    <tr t-on-click="() => this.selectTransfer(transfer.id)"
+                                        t-att-class="{
+                                            'table-active fw-bold': state.selectedTransferId === transfer.id,
+                                        }"
+                                        style="cursor: pointer;">
+                                        <td>
+                                            <span class="small" t-esc="transfer.name"/>
+                                        </td>
+                                        <td class="text-truncate" style="max-width: 180px;">
+                                            <span class="small" t-esc="getProductSummary(transfer)"/>
+                                        </td>
+                                        <td>
+                                            <i class="fa fa-building-o fa-fw text-muted me-1"/>
+                                            <span class="small" t-esc="transfer.source_warehouse"/>
+                                        </td>
+                                        <td>
+                                            <span t-attf-class="badge {{ getStateBadgeClass(transfer.pos_state) }}">
+                                                <i t-attf-class="fa {{ getStateIcon(transfer.pos_state) }} me-1"/>
+                                                <t t-esc="getStateLabel(transfer.pos_state)"/>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="small text-muted" t-esc="getTimeAgo(transfer.create_date)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Right panel: selected transfer detail -->
+                    <div class="transfer-detail overflow-auto p-3" style="width: 45%;">
+                        <t t-if="!selectedTransfer">
+                            <div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
+                                <i class="fa fa-hand-pointer-o fa-3x mb-3"/>
+                                <p>Seleccione un traslado de la lista</p>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <t t-set="tr" t-value="selectedTransfer"/>
+
+                            <!-- Header with reference and state -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="mb-1" t-esc="tr.name"/>
+                                    <div class="text-muted small">
+                                        <i class="fa fa-tag me-1"/>
+                                        <t t-esc="tr.origin"/>
+                                    </div>
+                                </div>
+                                <span t-attf-class="badge fs-6 {{ getStateBadgeClass(tr.pos_state) }}">
+                                    <i t-attf-class="fa {{ getStateIcon(tr.pos_state) }} me-1"/>
+                                    <t t-esc="getStateLabel(tr.pos_state)"/>
+                                </span>
+                            </div>
+
+                            <!-- Transfer info -->
+                            <div class="mb-3 small">
+                                <div class="row mb-1">
+                                    <div class="col-5 text-muted">Almacén origen:</div>
+                                    <div class="col-7 fw-bold">
+                                        <i class="fa fa-building-o me-1"/>
+                                        <t t-esc="tr.source_warehouse"/>
+                                    </div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5 text-muted">Fecha solicitud:</div>
+                                    <div class="col-7" t-esc="formatDate(tr.create_date)"/>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-5 text-muted">Fecha prevista:</div>
+                                    <div class="col-7" t-esc="formatDate(tr.date)"/>
+                                </div>
+                                <div t-if="tr.note" class="row mb-1">
+                                    <div class="col-5 text-muted">Notas:</div>
+                                    <div class="col-7 fst-italic" t-esc="tr.note"/>
+                                </div>
+                            </div>
+
+                            <!-- Product lines -->
+                            <h6 class="mb-2">Productos</h6>
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-center" style="width: 80px;">Solicitado</th>
+                                        <th class="text-center" style="width: 80px;">Hecho</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="tr.products || []" t-as="line" t-key="line.product_id">
+                                        <tr>
+                                            <td t-esc="line.product_name"/>
+                                            <td class="text-center" t-esc="line.qty_demanded"/>
+                                            <td class="text-center">
+                                                <span t-att-class="{ 'text-success fw-bold': line.qty_done >= line.qty_demanded, 'text-muted': line.qty_done === 0 }"
+                                                      t-esc="line.qty_done"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                            <!-- Action buttons -->
+                            <div class="d-flex gap-2 mt-3">
+                                <t t-if="canReceive(tr)">
+                                    <button class="btn btn-success btn-lg flex-grow-1"
+                                            t-on-click="onClickReceive">
+                                        <i class="fa fa-check-circle me-2"/>Recepcionar
+                                    </button>
+                                </t>
+                                <t t-elif="tr.pos_state === 'pending'">
+                                    <div class="alert alert-warning mb-0 flex-grow-1 text-center small">
+                                        <i class="fa fa-clock-o me-1"/>
+                                        Pendiente de preparación en el almacén de origen.
+                                    </div>
+                                </t>
+                                <t t-elif="tr.pos_state === 'received'">
+                                    <div class="alert alert-success mb-0 flex-grow-1 text-center small">
+                                        <i class="fa fa-check me-1"/>
+                                        Traslado recibido correctamente.
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Footer with count -->
+                <div t-if="!state.isLoading and state.filteredTransfers.length > 0"
+                     class="border-top bg-light p-2 text-center text-muted small">
+                    <t t-esc="state.filteredTransfers.length"/> traslado(s) encontrado(s)
+                </div>
+            </div>
+        </Dialog>
+    </t>
+
+</templates>

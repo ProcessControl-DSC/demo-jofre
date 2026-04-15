@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stock_picking_pos_user,stock.picking.pos.user,stock.model_stock_picking,point_of_sale.group_pos_user,1,1,1,0
+access_stock_move_pos_user,stock.move.pos.user,stock.model_stock_move,point_of_sale.group_pos_user,1,1,1,0
+access_stock_warehouse_pos_user,stock.warehouse.pos.user,stock.model_stock_warehouse,point_of_sale.group_pos_user,1,0,0,0
+access_stock_picking_type_pos_user,stock.picking.type.pos.user,stock.model_stock_picking_type,point_of_sale.group_pos_user,1,0,0,0
+access_stock_location_pos_user,stock.location.pos.user,stock.model_stock_location,point_of_sale.group_pos_user,1,0,0,0
