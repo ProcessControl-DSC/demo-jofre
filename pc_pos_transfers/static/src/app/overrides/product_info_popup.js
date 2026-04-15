@@ -2,64 +2,66 @@
 import { ProductInfoPopup } from "@point_of_sale/app/components/popups/product_info_popup/product_info_popup";
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
-import { _t } from "@web/core/l10n/translation";
+import { onMounted, onPatched } from "@odoo/owl";
 import { TransferRequestPopup } from "@pc_pos_transfers/app/transfer_request/transfer_request_popup";
 
 patch(ProductInfoPopup.prototype, {
     setup() {
         super.setup(...arguments);
-        this.dialog = useService("dialog");
+        this.dialogService = useService("dialog");
+
+        const injectButtons = () => this._injectTransferButtons();
+        onMounted(injectButtons);
+        onPatched(injectButtons);
     },
 
-    /**
-     * Get the current POS warehouse ID.
-     */
-    getCurrentWarehouseId() {
-        return this.pos.getTransferWarehouseId();
-    },
+    _injectTransferButtons() {
+        const el = this.el || this.__owl__?.bdom?.el;
+        if (!el) return;
 
-    /**
-     * Check if a warehouse is the current store (should not show request button).
-     * We compare warehouse names since the popup data contains warehouse names.
-     */
-    isCurrentWarehouse(warehouseName) {
-        const currentWhId = this.getCurrentWarehouseId();
-        if (!currentWhId) {
-            return false;
-        }
-        // Try to match by warehouse_id from config
-        const configWh = this.pos.config.warehouse_id;
-        if (configWh) {
-            const configWhName = configWh.name || configWh.display_name || "";
-            if (configWhName === warehouseName) {
-                return true;
+        // Find the warehouse rows inside the accordion
+        const container = el.querySelector('.accordion-content .border-start');
+        if (!container) return;
+
+        // Already injected?
+        if (container.querySelector('.transfer-request-btn')) return;
+
+        const rows = container.querySelectorAll(':scope > .d-flex.gap-2');
+        rows.forEach((row) => {
+            // Extract warehouse name and qty from the row
+            const divs = row.querySelectorAll(':scope > div');
+            if (divs.length < 2) return;
+
+            const whName = divs[0].textContent.replace(':', '').trim();
+            const qtyText = divs[1].querySelector('.fw-bolder')?.textContent?.trim();
+            const qty = parseFloat(qtyText) || 0;
+
+            if (qty > 0) {
+                const btnDiv = document.createElement('div');
+                btnDiv.className = 'ms-auto';
+                btnDiv.innerHTML = `<button class="btn btn-sm btn-outline-primary py-0 px-2 transfer-request-btn">
+                    <i class="fa fa-arrow-right me-1"></i>Solicitar
+                </button>`;
+                btnDiv.querySelector('button').addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    this._openTransferRequest(whName, qty);
+                });
+                row.classList.add('align-items-center');
+                row.appendChild(btnDiv);
             }
-        }
-        return false;
+        });
     },
 
-    /**
-     * Check if a warehouse has available stock to request.
-     */
-    canRequestFromWarehouse(warehouse) {
-        return warehouse.free_qty > 0 && !this.isCurrentWarehouse(warehouse.name);
-    },
-
-    /**
-     * Open the transfer request popup for a specific warehouse.
-     */
-    onClickRequestTransfer(warehouse) {
+    _openTransferRequest(warehouseName, availableQty) {
         const productTemplate = this.props.productTemplate;
 
-        // Resolve product.product ID from the template's variants
         let productId = false;
-        const variants = productTemplate.product_variant_ids;
+        const variants = productTemplate?.product_variant_ids;
         if (variants) {
             if (Array.isArray(variants) && variants.length > 0) {
                 const first = variants[0];
                 productId = typeof first === 'object' ? (first.id || false) : first;
             } else if (typeof variants === 'object' && typeof variants[Symbol.iterator] === 'function') {
-                // OWL collection/Set — iterate to get first
                 for (const v of variants) {
                     productId = typeof v === 'object' ? (v.id || false) : v;
                     break;
@@ -67,11 +69,11 @@ patch(ProductInfoPopup.prototype, {
             }
         }
 
-        this.dialog.add(TransferRequestPopup, {
+        this.dialogService.add(TransferRequestPopup, {
             productTemplate: productTemplate,
             productId: productId,
-            warehouseName: warehouse.name,
-            availableQty: warehouse.free_qty,
+            warehouseName: warehouseName,
+            availableQty: availableQty,
             close: () => {},
         });
     },
