@@ -2,28 +2,40 @@
 import { ProductInfoPopup } from "@point_of_sale/app/components/popups/product_info_popup/product_info_popup";
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
-import { onMounted, onPatched } from "@odoo/owl";
+import { onMounted, onWillUnmount } from "@odoo/owl";
 import { TransferRequestPopup } from "@pc_pos_transfers/app/transfer_request/transfer_request_popup";
 
 patch(ProductInfoPopup.prototype, {
     setup() {
         super.setup(...arguments);
         this.dialogService = useService("dialog");
+        this._observer = null;
 
-        const injectButtons = () => {
-            // Small delay to ensure DOM is ready after dialog renders
-            setTimeout(() => this._injectTransferButtons(), 100);
-        };
-        onMounted(injectButtons);
-        onPatched(injectButtons);
+        onMounted(() => {
+            // Watch for accordion content appearing (when user clicks "Inventario")
+            this._observer = new MutationObserver(() => {
+                this._injectTransferButtons();
+            });
+            // Observe the entire modal for changes (accordion expand/collapse)
+            const modal = document.querySelector('.modal-body');
+            if (modal) {
+                this._observer.observe(modal, { childList: true, subtree: true, attributes: true });
+            }
+            // Also try immediately in case accordion is already open
+            this._injectTransferButtons();
+        });
+
+        onWillUnmount(() => {
+            if (this._observer) {
+                this._observer.disconnect();
+                this._observer = null;
+            }
+        });
     },
 
     _injectTransferButtons() {
-        // Use document.querySelector since Dialog components don't have this.el
         const container = document.querySelector('.accordion-content .border-start');
         if (!container) return;
-
-        // Already injected?
         if (container.querySelector('.transfer-request-btn')) return;
 
         const rows = container.querySelectorAll(':scope > .d-flex.gap-2');
