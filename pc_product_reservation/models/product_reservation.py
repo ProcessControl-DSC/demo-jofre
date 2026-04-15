@@ -478,9 +478,6 @@ class ProductReservation(models.Model):
 
         for line in self.line_ids:
             move_vals = {
-                'name': _('Reserva %(reservation)s - %(product)s',
-                          reservation=self.name,
-                          product=line.product_id.display_name),
                 'product_id': line.product_id.id,
                 'product_uom_qty': line.product_qty,
                 'product_uom': line.product_id.uom_id.id,
@@ -488,7 +485,6 @@ class ProductReservation(models.Model):
                 'location_dest_id': reservation_location.id,
                 'origin': self.name,
                 'company_id': self.company_id.id,
-                'state': 'draft',
             }
             move = self.env['stock.move'].sudo().create(move_vals)
             move._action_confirm()
@@ -505,9 +501,6 @@ class ProductReservation(models.Model):
 
         for line in self.line_ids.filtered(lambda l: l.move_id):
             move_vals = {
-                'name': _('Devolución reserva %(reservation)s - %(product)s',
-                          reservation=self.name,
-                          product=line.product_id.display_name),
                 'product_id': line.product_id.id,
                 'product_uom_qty': line.product_qty,
                 'product_uom': line.product_id.uom_id.id,
@@ -515,7 +508,6 @@ class ProductReservation(models.Model):
                 'location_dest_id': stock_location.id,
                 'origin': self.name,
                 'company_id': self.company_id.id,
-                'state': 'draft',
             }
             return_move = self.env['stock.move'].sudo().create(move_vals)
             return_move._action_confirm()
