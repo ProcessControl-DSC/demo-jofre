@@ -38,7 +38,7 @@ export class TransferRequestPopup extends Component {
 
     get productName() {
         const tmpl = this.props.productTemplate;
-        return tmpl.display_name || tmpl.displayName || tmpl.name || "";
+        return tmpl ? (tmpl.display_name || tmpl.name || "") : "Seleccione un producto";
     }
 
     onQtyChange(ev) {
