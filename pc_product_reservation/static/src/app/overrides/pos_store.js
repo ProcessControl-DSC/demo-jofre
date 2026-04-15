@@ -26,7 +26,7 @@ patch(PosStore.prototype, {
             return false;
         }
 
-        const partner = order.getPartner();
+        const partner = order.partner_id;
         if (!partner) {
             this.notification.add(
                 _t("Debe seleccionar un cliente antes de reservar."),
@@ -35,7 +35,7 @@ patch(PosStore.prototype, {
             return false;
         }
 
-        const lines = order.getOrderlines();
+        const lines = order.lines;
         if (!lines || lines.length === 0) {
             this.notification.add(
                 _t("Debe añadir al menos un producto al pedido."),
@@ -47,13 +47,13 @@ patch(PosStore.prototype, {
         // Build the lines data
         const reservationLines = lines.map((line) => ({
             product_id: line.product_id.id,
-            product_qty: line.getQuantity(),
-            price_unit: line.getUnitPrice(),
+            product_qty: line.qty,
+            price_unit: line.price_unit,
         }));
 
         // Build items summary for confirmation
         const itemsSummary = lines
-            .map((line) => `  - ${line.getQuantity()}x ${line.getFullProductName()}`)
+            .map((line) => `  - ${line.qty}x ${line.full_product_name || line.product_id.display_name}`)
             .join("\n");
 
         // Ask for confirmation
@@ -196,7 +196,7 @@ patch(PosStore.prototype, {
             // Set the partner
             const partner = this.models["res.partner"].get(reservation.partner_id);
             if (partner) {
-                order.setPartner(partner);
+                order.partner_id = partner;
             }
 
             // Add lines from the reservation
