@@ -15,10 +15,11 @@ export class TransferRequestPopup extends Component {
     static template = "pc_pos_transfers.TransferRequestPopup";
     static components = { Dialog };
     static props = {
-        productTemplate: { type: Object },
+        productTemplate: { type: Object, optional: true },
         productId: { type: [Number, Boolean, { value: false }], optional: true },
-        warehouseName: { type: String },
-        availableQty: { type: Number },
+        warehouseName: { type: String, optional: true },
+        availableQty: { type: Number, optional: true },
+        availableWarehouses: { type: Array, optional: true },
         close: { type: Function },
     };
 

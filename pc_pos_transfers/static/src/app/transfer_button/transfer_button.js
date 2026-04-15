@@ -13,26 +13,21 @@ patch(ActionpadWidget.prototype, {
     },
     onClickTransferRequest() {
         const order = this.pos.getOrder();
-        const selectedLine = order?.getSelectedOrderline ? order.getSelectedOrderline() : null;
-        const selectedLine2 = selectedLine || (order?.lines?.length ? order.lines[order.lines.length - 1] : null);
-        
-        let productTemplate = null;
-        let productId = false;
-        if (selectedLine2 && selectedLine2.product_id) {
-            const product = selectedLine2.product_id;
-            productId = product.id;
-            productTemplate = product.product_tmpl_id 
-                ? this.pos.models["product.template"]?.get(product.product_tmpl_id) 
+        const line = order?.lines?.length ? order.lines[order.lines.length - 1] : null;
+
+        const popupProps = { close: () => {} };
+
+        if (line && line.product_id) {
+            const product = line.product_id;
+            popupProps.productId = product.id;
+            const tmpl = product.product_tmpl_id
+                ? this.pos.models["product.template"]?.get(product.product_tmpl_id)
                 : null;
+            if (tmpl) {
+                popupProps.productTemplate = tmpl;
+            }
         }
-        
-        this.dialogService.add(TransferRequestPopup, {
-            productTemplate: productTemplate,
-            productId: productId,
-            warehouseName: '',
-            availableQty: 0,
-            availableWarehouses: [],
-            close: () => {},
-        });
+
+        this.dialogService.add(TransferRequestPopup, popupProps);
     },
 });
