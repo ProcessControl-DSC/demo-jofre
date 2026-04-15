@@ -10,17 +10,17 @@ patch(ProductInfoPopup.prototype, {
         super.setup(...arguments);
         this.dialogService = useService("dialog");
 
-        const injectButtons = () => this._injectTransferButtons();
+        const injectButtons = () => {
+            // Small delay to ensure DOM is ready after dialog renders
+            setTimeout(() => this._injectTransferButtons(), 100);
+        };
         onMounted(injectButtons);
         onPatched(injectButtons);
     },
 
     _injectTransferButtons() {
-        const el = this.el || this.__owl__?.bdom?.el;
-        if (!el) return;
-
-        // Find the warehouse rows inside the accordion
-        const container = el.querySelector('.accordion-content .border-start');
+        // Use document.querySelector since Dialog components don't have this.el
+        const container = document.querySelector('.accordion-content .border-start');
         if (!container) return;
 
         // Already injected?
@@ -28,7 +28,6 @@ patch(ProductInfoPopup.prototype, {
 
         const rows = container.querySelectorAll(':scope > .d-flex.gap-2');
         rows.forEach((row) => {
-            // Extract warehouse name and qty from the row
             const divs = row.querySelectorAll(':scope > div');
             if (divs.length < 2) return;
 
@@ -39,9 +38,7 @@ patch(ProductInfoPopup.prototype, {
             if (qty > 0) {
                 const btnDiv = document.createElement('div');
                 btnDiv.className = 'ms-auto';
-                btnDiv.innerHTML = `<button class="btn btn-sm btn-outline-primary py-0 px-2 transfer-request-btn">
-                    <i class="fa fa-arrow-right me-1"></i>Solicitar
-                </button>`;
+                btnDiv.innerHTML = '<button class="btn btn-sm btn-outline-primary py-0 px-2 transfer-request-btn"><i class="fa fa-arrow-right me-1"></i>Solicitar</button>';
                 btnDiv.querySelector('button').addEventListener('click', (ev) => {
                     ev.stopPropagation();
                     this._openTransferRequest(whName, qty);
