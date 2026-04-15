@@ -4,24 +4,30 @@
     <t t-name="pc_pos_transfers.TransferRequestPopup">
         <Dialog title="'Solicitar traslado'" size="'md'">
             <div class="transfer-request-popup p-3">
-                <!-- Product info -->
                 <div class="mb-3 p-3 bg-light rounded">
-                    <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2 mb-1">
                         <i class="fa fa-cube fa-lg text-primary"/>
                         <h5 class="mb-0" t-esc="productName"/>
                     </div>
-                    <div class="d-flex align-items-center gap-2 text-muted">
-                        <i class="fa fa-warehouse"/>
-                        <span>Desde: <strong t-esc="props.warehouseName"/></span>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 text-muted mt-1">
-                        <i class="fa fa-cubes"/>
-                        <span>Disponible: <strong><t t-esc="props.availableQty"/> uds.</strong></span>
-                    </div>
                 </div>
 
-                <!-- Quantity selector -->
-                <div class="mb-3">
+                <div class="mb-3" t-if="hasWarehouses">
+                    <label class="form-label fw-bold">Desde (almacen de origen)</label>
+                    <select class="form-select" t-on-change="onWarehouseChange">
+                        <t t-foreach="warehouses" t-as="wh" t-key="wh.name">
+                            <option t-att-value="wh.name"
+                                    t-att-selected="wh.name === state.selectedWarehouse">
+                                <t t-esc="wh.name"/> - <t t-esc="wh.qty"/> uds.
+                            </option>
+                        </t>
+                    </select>
+                </div>
+                <div class="mb-3 alert alert-warning" t-else="">
+                    <i class="fa fa-exclamation-triangle me-1"/>
+                    No hay almacenes con stock disponible para este producto.
+                </div>
+
+                <div class="mb-3" t-if="hasWarehouses">
                     <label class="form-label fw-bold">Cantidad a solicitar</label>
                     <div class="d-flex align-items-center gap-2">
                         <button class="btn btn-outline-secondary btn-lg"
@@ -30,11 +36,12 @@
                             <i class="fa fa-minus"/>
                         </button>
                         <input type="number"
-                               class="form-control form-control-lg text-center transfer-qty-input"
+                               class="form-control form-control-lg text-center"
                                t-att-value="state.qty"
                                t-att-min="1"
                                t-att-max="maxQty"
                                t-on-change="onQtyChange"
+                               inputmode="numeric"
                                style="max-width: 120px;"/>
                         <button class="btn btn-outline-secondary btn-lg"
                                 t-on-click="incrementQty"
@@ -44,26 +51,22 @@
                     </div>
                 </div>
 
-                <!-- Info message -->
-                <div class="alert alert-info small mb-0">
+                <div class="alert alert-info small mb-0" t-if="hasWarehouses">
                     <i class="fa fa-info-circle me-1"/>
-                    Se creará un traslado interno desde
-                    <strong t-esc="props.warehouseName"/>
-                    hacia tu tienda.
-                    El almacén de origen deberá preparar y enviar el pedido.
+                    Se creara un traslado interno hacia tu tienda.
+                    El almacen de origen debera preparar y enviar el pedido.
                 </div>
             </div>
 
             <t t-set-slot="footer">
                 <div class="d-flex gap-2 w-100">
                     <button class="btn btn-secondary btn-lg flex-grow-1"
-                            t-on-click="onCancel"
-                            t-att-disabled="state.isProcessing">
+                            t-on-click="onCancel">
                         Cancelar
                     </button>
                     <button class="btn btn-primary btn-lg flex-grow-1"
                             t-on-click="onConfirm"
-                            t-att-disabled="state.isProcessing">
+                            t-att-disabled="state.isProcessing or !hasWarehouses">
                         <t t-if="state.isProcessing">
                             <i class="fa fa-spinner fa-spin me-1"/>Creando...
                         </t>

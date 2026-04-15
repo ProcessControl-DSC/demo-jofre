@@ -1,9 +1,4 @@
 /** @odoo-module */
-/**
- * Global DOM observer that injects a "Solicitar traslado" button into the
- * ProductInfoPopup whenever it appears. This avoids all OWL lifecycle issues
- * since it works purely at the DOM level.
- */
 import { PosStore } from "@point_of_sale/app/services/pos_store";
 import { patch } from "@web/core/utils/patch";
 import { TransferRequestPopup } from "@pc_pos_transfers/app/transfer_request/transfer_request_popup";
@@ -21,7 +16,6 @@ patch(PosStore.prototype, {
         const self = this;
 
         globalObserver = new MutationObserver(() => {
-            // Look for the ProductInfoPopup's title section
             const titleSection = document.querySelector('.section-product-info-title');
             if (!titleSection) return;
             if (titleSection.querySelector('.transfer-main-btn')) return;
@@ -44,8 +38,41 @@ patch(PosStore.prototype, {
         });
     },
 
+    _extractWarehousesFromPopup() {
+        const warehouses = [];
+        const rows = document.querySelectorAll('.accordion-content .border-start > .d-flex.gap-2');
+        rows.forEach((row) => {
+            const divs = row.querySelectorAll(':scope > div');
+            if (divs.length < 2) return;
+            const whName = divs[0].textContent.replace(':', '').trim();
+            const qtyText = divs[1].querySelector('.fw-bolder')?.textContent?.trim();
+            const qty = parseFloat(qtyText) || 0;
+            warehouses.push({ name: whName, qty: qty });
+        });
+        return warehouses;
+    },
+
+    _extractProductNameFromPopup() {
+        const modalBody = document.querySelector('.modal-body');
+        if (!modalBody) return '';
+        const h4 = modalBody.querySelector('.h4');
+        if (h4) {
+            const text = h4.textContent || '';
+            return text.split('|')[0].trim();
+        }
+        return '';
+    },
+
     _openTransferFromProductInfo() {
+        const warehouses = this._extractWarehousesFromPopup();
+        const productName = this._extractProductNameFromPopup();
+        const withStock = warehouses.filter(w => w.qty > 0);
+
         this.dialog.add(TransferRequestPopup, {
+            productName: productName,
+            availableWarehouses: withStock,
+            warehouseName: withStock.length > 0 ? withStock[0].name : '',
+            availableQty: withStock.length > 0 ? withStock[0].qty : 0,
             close: () => {},
         });
     },
