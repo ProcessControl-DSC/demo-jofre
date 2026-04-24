@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pc_pos_line_location.SelectLocationPopup">
+        <Dialog title="props.title" footer="false" bodyClass="'pc-pos-line-location-popup'">
+            <div class="pc-pos-line-location-product" t-if="props.productName">
+                <strong t-esc="props.productName"/>
+            </div>
+            <ul class="pc-pos-line-location-list list-group">
+                <li t-foreach="props.candidates" t-as="candidate" t-key="candidate.location.id"
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                    t-on-click="() => this.select(candidate)"
+                    role="button">
+                    <span t-esc="candidate.location.complete_name or candidate.location.name"/>
+                    <span class="badge rounded-pill text-bg-secondary"
+                          t-esc="candidate.available"/>
+                </li>
+            </ul>
+            <div class="mt-2 d-flex justify-content-end">
+                <button class="btn btn-secondary" t-on-click="cancel">
+                    <t>Cancel</t>
+                </button>
+            </div>
+        </Dialog>
+    </t>
+
+</templates>

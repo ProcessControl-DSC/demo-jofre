@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pc_pos_line_location.Orderline"
+       t-inherit="point_of_sale.Orderline"
+       t-inherit-mode="extension">
+        <xpath expr="//ul[contains(@class, 'info-list')]" position="inside">
+            <li t-if="line.location_id" class="pc-pos-line-location-badge"
+                t-on-click.stop="() => this.onClickLocation()"
+                role="button"
+                title="Click to change source location">
+                <i class="fa fa-map-marker me-1"/>
+                <em t-esc="line.location_id.complete_name or line.location_id.name"/>
+            </li>
+        </xpath>
+    </t>
+
+</templates>
