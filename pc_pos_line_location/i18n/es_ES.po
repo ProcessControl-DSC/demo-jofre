@@ -15,17 +15,17 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: pc_pos_line_location
-#: model:ir.module.module,shortdesc:pc_pos_line_location
+#: model:ir.module.module,shortdesc:base.module_pc_pos_line_location
 msgid "POS - Line Source Location"
 msgstr "TPV - Ubicación de origen por línea"
 
 #. module: pc_pos_line_location
-#: model:ir.module.module,summary:pc_pos_line_location
+#: model:ir.module.module,summary:base.module_pc_pos_line_location
 msgid "Select the source stock location per POS order line"
 msgstr "Selecciona la ubicación de stock de origen por línea del TPV"
 
 #. module: pc_pos_line_location
-#: model:ir.module.module,description:pc_pos_line_location
+#: model:ir.module.module,description:base.module_pc_pos_line_location
 msgid ""
 "Allow cashiers to select, for each line of a POS ticket, the internal "
 "stock location from which the product is picked. The selected location "
