@@ -15,6 +15,29 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: pc_pos_line_location
+#: model:ir.module.module,shortdesc:pc_pos_line_location
+msgid "POS - Line Source Location"
+msgstr "TPV - Ubicación de origen por línea"
+
+#. module: pc_pos_line_location
+#: model:ir.module.module,summary:pc_pos_line_location
+msgid "Select the source stock location per POS order line"
+msgstr "Selecciona la ubicación de stock de origen por línea del TPV"
+
+#. module: pc_pos_line_location
+#: model:ir.module.module,description:pc_pos_line_location
+msgid ""
+"Allow cashiers to select, for each line of a POS ticket, the internal "
+"stock location from which the product is picked. The selected location "
+"propagates to the stock move lines of the picking generated at the end "
+"of the session, overriding the default removal strategy."
+msgstr ""
+"Permite al cajero seleccionar, para cada línea del ticket del TPV, la "
+"ubicación de stock interna desde la que se coge el producto. La ubicación "
+"elegida se propaga a las líneas de movimiento del albarán generado al "
+"cerrar la sesión, sobrescribiendo la estrategia de remoción por defecto."
+
+#. module: pc_pos_line_location
 #: model:ir.model.fields,field_description:pc_pos_line_location.field_pos_config__allow_line_location_selection
 msgid "Select Source Location per Line"
 msgstr "Seleccionar ubicación de origen por línea"
