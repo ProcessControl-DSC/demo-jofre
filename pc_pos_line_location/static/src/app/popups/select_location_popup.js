@@ -31,8 +31,6 @@ export class SelectLocationPopup extends Component {
                     allocations[locId] = qty;
                 }
             }
-        } else if (this.props.candidates.length > 0) {
-            allocations[this.props.candidates[0].location.id] = this.props.totalQty;
         }
         this.state = useState({ allocations });
     }
@@ -41,6 +39,18 @@ export class SelectLocationPopup extends Component {
         const raw = parseFloat(ev.target.value);
         const val = isNaN(raw) || raw < 0 ? 0 : raw;
         this.state.allocations[locId] = val;
+    }
+
+    increment(locId) {
+        const current = parseFloat(this.state.allocations[locId]) || 0;
+        this.state.allocations[locId] = current + 1;
+    }
+
+    decrement(locId) {
+        const current = parseFloat(this.state.allocations[locId]) || 0;
+        if (current > 0) {
+            this.state.allocations[locId] = current - 1;
+        }
     }
 
     fillFromCandidate(c) {

@@ -29,10 +29,20 @@
                             </a>
                         </td>
                         <td class="text-end">
-                            <input type="number" min="0" step="1"
-                                   class="form-control text-end pc-pos-line-location-qty-input"
-                                   t-att-value="state.allocations[candidate.location.id] || 0"
-                                   t-on-input="(ev) => this.onInput(candidate.location.id, ev)"/>
+                            <div class="pc-pos-line-location-stepper">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary pc-pos-line-location-step-btn"
+                                        t-on-click="() => this.decrement(candidate.location.id)"
+                                        aria-label="Decrease">−</button>
+                                <input type="number" min="0" step="1"
+                                       class="form-control text-end pc-pos-line-location-qty-input"
+                                       t-att-value="state.allocations[candidate.location.id] || 0"
+                                       t-on-input="(ev) => this.onInput(candidate.location.id, ev)"/>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary pc-pos-line-location-step-btn"
+                                        t-on-click="() => this.increment(candidate.location.id)"
+                                        aria-label="Increase">+</button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
