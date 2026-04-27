@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="pos_config_view_form_inherit_line_location" model="ir.ui.view">
+        <field name="name">pos.config.form.inherit.line.location</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='other_devices']" position="after">
+                <setting id="line_location_selection"
+                         string="Source Location per Line"
+                         help="Let the cashier choose the source stock location for each product line added to the ticket.">
+                    <field name="allow_line_location_selection"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

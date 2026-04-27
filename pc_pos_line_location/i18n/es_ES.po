@@ -1,0 +1,78 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * pc_pos_line_location
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: pc_pos_line_location
+#: model:ir.model.fields,field_description:pc_pos_line_location.field_pos_config__allow_line_location_selection
+msgid "Select Source Location per Line"
+msgstr "Seleccionar ubicación de origen por línea"
+
+#. module: pc_pos_line_location
+#: model:ir.model.fields,help:pc_pos_line_location.field_pos_config__allow_line_location_selection
+msgid ""
+"When enabled, the cashier can choose the source stock location for each "
+"product line added to the ticket. If stock is available in only one "
+"location, the system assigns it silently."
+msgstr ""
+"Si se activa, el cajero puede escoger la ubicación de origen de cada línea "
+"de producto añadida al ticket. Si sólo hay stock en una ubicación, el "
+"sistema la asigna automáticamente."
+
+#. module: pc_pos_line_location
+#: model:ir.model.fields,field_description:pc_pos_line_location.field_pos_order_line__location_id
+msgid "Source Location"
+msgstr "Ubicación de origen"
+
+#. module: pc_pos_line_location
+#: model:ir.model.fields,help:pc_pos_line_location.field_pos_order_line__location_id
+msgid ""
+"Stock location chosen by the cashier as source of this line. When set, it "
+"overrides the default removal strategy when the picking is generated."
+msgstr ""
+"Ubicación de stock elegida por el cajero como origen de esta línea. Cuando "
+"está definida, sobrescribe la estrategia de remoción por defecto al generar "
+"el albarán."
+
+#. module: pc_pos_line_location
+#: model_terms:ir.ui.view,arch_db:pc_pos_line_location.pos_config_view_form_inherit_line_location
+msgid "Source Location per Line"
+msgstr "Ubicación de origen por línea"
+
+#. module: pc_pos_line_location
+#: model_terms:ir.ui.view,arch_db:pc_pos_line_location.pos_config_view_form_inherit_line_location
+msgid ""
+"Let the cashier choose the source stock location for each product line "
+"added to the ticket."
+msgstr ""
+"Permite al cajero escoger la ubicación de stock de origen para cada línea "
+"de producto añadida al ticket."
+
+#. module: pc_pos_line_location
+#. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/app/popups/select_location_popup.js:0
+msgid "Select source location"
+msgstr "Selecciona ubicación de origen"
+
+#. module: pc_pos_line_location
+#. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/app/popups/select_location_popup.xml:0
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: pc_pos_line_location
+#. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/overrides/components/orderline/orderline.xml:0
+msgid "Click to change source location"
+msgstr "Haz clic para cambiar la ubicación de origen"

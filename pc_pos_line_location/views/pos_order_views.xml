@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_pos_order_line_form_inherit_line_location" model="ir.ui.view">
+        <field name="name">pos.order.line.form.inherit.line.location</field>
+        <field name="model">pos.order.line</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='qty']" position="after">
+                <field name="location_id" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_pos_pos_form_inherit_line_location" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.line.location</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='lines']/list/field[@name='qty']" position="after">
+                <field name="location_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

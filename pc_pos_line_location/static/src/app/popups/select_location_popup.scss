@@ -1,0 +1,30 @@
+.pc-pos-line-location-popup {
+    .pc-pos-line-location-product {
+        margin-bottom: 0.75rem;
+        font-size: 1.1rem;
+    }
+
+    .pc-pos-line-location-list {
+        max-height: 50vh;
+        overflow-y: auto;
+
+        .list-group-item {
+            cursor: pointer;
+
+            &:hover {
+                background-color: var(--bs-secondary-bg-subtle, #eef2f7);
+            }
+        }
+    }
+}
+
+.pc-pos-line-location-badge {
+    cursor: pointer;
+    font-size: 0.85rem;
+    opacity: 0.85;
+
+    &:hover {
+        opacity: 1;
+        text-decoration: underline;
+    }
+}
