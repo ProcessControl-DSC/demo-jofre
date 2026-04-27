@@ -39,9 +39,15 @@ class StockPicking(models.Model):
         chosen = first_line.location_id
         if not chosen:
             return vals
-        source = self.location_id
         chosen_path = chosen.parent_path or ""
+        source = self.location_id
+        dest = self.location_dest_id
         source_path = source.parent_path or ""
-        if source_path and chosen_path.startswith(source_path):
+        dest_path = dest.parent_path or ""
+        if source.usage == "internal" and source_path and chosen_path.startswith(source_path):
+            # Outgoing flow: chosen location is the source of the move
             vals["location_id"] = chosen.id
+        elif dest.usage == "internal" and dest_path and chosen_path.startswith(dest_path):
+            # Incoming flow (refund): chosen location is the destination of the move
+            vals["location_dest_id"] = chosen.id
         return vals

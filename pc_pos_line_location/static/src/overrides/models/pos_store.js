@@ -28,7 +28,8 @@ patch(PosStore.prototype, {
 
     /**
      * Returns the list of {location, available} for a given product,
-     * filtering to locations that currently have stock > 0.
+     * filtering to locations that currently have stock > 0. Used for
+     * outgoing (sale) lines.
      */
     getLocationCandidatesForProduct(productId) {
         const quants = this.models["stock.quant"]
@@ -50,14 +51,72 @@ patch(PosStore.prototype, {
             byLocation.set(locId, prev + q.quantity - (q.reserved_quantity || 0));
         }
 
+        const sourceRoot = this.config.picking_type_id?.default_location_src_id;
         const candidates = [];
         for (const loc of this.getCandidateLocations()) {
+            if (sourceRoot && !this._isLocationChildOf(loc, sourceRoot)) {
+                continue;
+            }
             const available = byLocation.get(loc.id);
             if (available && available > 0) {
                 candidates.push({ location: loc, available });
             }
         }
         return candidates;
+    },
+
+    /**
+     * Returns the list of {location, available} for a refund line.
+     * The candidates are internal locations under the destination of the
+     * return picking type. Stock is shown for information only and does
+     * not filter the list (a refund can land in any internal location).
+     */
+    getReturnLocationCandidatesForProduct(productId) {
+        const pickingType = this.config.picking_type_id;
+        const returnPickingType =
+            pickingType?.return_picking_type_id || pickingType;
+        const destRoot = returnPickingType?.default_location_dest_id;
+        if (!destRoot) {
+            return [];
+        }
+
+        const stockByLocation = new Map();
+        const quants = this.models["stock.quant"] || [];
+        for (const q of quants) {
+            if (
+                !q.product_id ||
+                q.product_id.id !== productId ||
+                !q.location_id
+            ) {
+                continue;
+            }
+            const prev = stockByLocation.get(q.location_id.id) || 0;
+            stockByLocation.set(q.location_id.id, prev + (q.quantity || 0));
+        }
+
+        const candidates = [];
+        for (const loc of this.getCandidateLocations()) {
+            if (!this._isLocationChildOf(loc, destRoot)) {
+                continue;
+            }
+            candidates.push({
+                location: loc,
+                available: stockByLocation.get(loc.id) || 0,
+            });
+        }
+        return candidates;
+    },
+
+    _isLocationChildOf(loc, parent) {
+        if (!parent || !loc) {
+            return false;
+        }
+        if (loc.id === parent.id) {
+            return true;
+        }
+        const childPath = loc.parent_path || "";
+        const parentPath = parent.parent_path || "";
+        return parentPath && childPath.startsWith(parentPath);
     },
 
     /**
@@ -75,13 +134,19 @@ patch(PosStore.prototype, {
         if (!product || product.type !== "consu" || !product.is_storable) {
             return;
         }
-        const candidates = this.getLocationCandidatesForProduct(product.id);
+
+        const isRefund = line.qty < 0;
+        const candidates = isRefund
+            ? this.getReturnLocationCandidatesForProduct(product.id)
+            : this.getLocationCandidatesForProduct(product.id);
 
         if (candidates.length === 0) {
             return;
         }
 
-        const totalQty = line.qty;
+        // Refund quantities are negative; we let the cashier reason in
+        // positive numbers and re-apply the sign after the popup closes.
+        const totalQty = Math.abs(line.qty);
         if (candidates.length === 1) {
             this._setLineLocation(line, candidates[0].location);
             return;
@@ -105,14 +170,24 @@ patch(PosStore.prototype, {
             return;
         }
 
+        const sign = isRefund ? -1 : 1;
+
         if (result.length === 1) {
-            this._setLineLocationAndQty(line, result[0].location, result[0].qty);
+            this._setLineLocationAndQty(
+                line,
+                result[0].location,
+                sign * result[0].qty
+            );
             return;
         }
 
         // Distribute across multiple lines.
         const order = line.order_id;
-        this._setLineLocationAndQty(line, result[0].location, result[0].qty);
+        this._setLineLocationAndQty(
+            line,
+            result[0].location,
+            sign * result[0].qty
+        );
 
         for (let i = 1; i < result.length; i++) {
             const alloc = result[i];
@@ -120,10 +195,11 @@ patch(PosStore.prototype, {
                 {
                     product_id: product,
                     price_unit: line.price_unit,
-                    qty: alloc.qty,
+                    qty: sign * alloc.qty,
                     discount: line.discount,
                     tax_ids: line.tax_ids,
                     attribute_value_ids: line.attribute_value_ids,
+                    refunded_orderline_id: line.refunded_orderline_id,
                 },
                 order,
                 { merge: false },
