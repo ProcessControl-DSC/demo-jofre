@@ -3,22 +3,58 @@
 
     <t t-name="pc_pos_line_location.SelectLocationPopup">
         <Dialog title="props.title" footer="false" bodyClass="'pc-pos-line-location-popup'">
-            <div class="pc-pos-line-location-product" t-if="props.productName">
+            <div class="pc-pos-line-location-header" t-if="props.productName">
                 <strong t-esc="props.productName"/>
+                <span class="ms-2 text-muted">
+                    <t>Total:</t> <strong t-esc="props.totalQty"/>
+                </span>
             </div>
-            <ul class="pc-pos-line-location-list list-group">
-                <li t-foreach="props.candidates" t-as="candidate" t-key="candidate.location.id"
-                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                    t-on-click="() => this.select(candidate)"
-                    role="button">
-                    <span t-esc="candidate.location.complete_name or candidate.location.name"/>
-                    <span class="badge rounded-pill text-bg-secondary"
-                          t-esc="candidate.available"/>
-                </li>
-            </ul>
-            <div class="mt-2 d-flex justify-content-end">
+
+            <table class="table pc-pos-line-location-table">
+                <thead>
+                    <tr>
+                        <th><t>Location</t></th>
+                        <th class="text-end"><t>Available</t></th>
+                        <th class="text-end pc-pos-line-location-qty-col"><t>Quantity</t></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="props.candidates" t-as="candidate" t-key="candidate.location.id">
+                        <td t-esc="candidate.location.complete_name or candidate.location.name"/>
+                        <td class="text-end">
+                            <a href="#" class="pc-pos-line-location-fill"
+                               t-on-click.prevent="() => this.fillFromCandidate(candidate)"
+                               title="Use available quantity">
+                                <t t-esc="candidate.available"/>
+                            </a>
+                        </td>
+                        <td class="text-end">
+                            <input type="number" min="0" step="1"
+                                   class="form-control text-end pc-pos-line-location-qty-input"
+                                   t-att-value="state.allocations[candidate.location.id] || 0"
+                                   t-on-input="(ev) => this.onInput(candidate.location.id, ev)"/>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="text-end fw-bold"><t>Assigned total:</t></td>
+                        <td class="text-end fw-bold"
+                            t-att-class="isValid ? 'text-success' : 'text-danger'">
+                            <t t-esc="assignedTotal"/> / <t t-esc="props.totalQty"/>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="d-flex justify-content-end gap-2 mt-2">
                 <button class="btn btn-secondary" t-on-click="cancel">
                     <t>Cancel</t>
+                </button>
+                <button class="btn btn-primary"
+                        t-att-disabled="!isValid"
+                        t-on-click="confirm">
+                    <t>Confirm</t>
                 </button>
             </div>
         </Dialog>

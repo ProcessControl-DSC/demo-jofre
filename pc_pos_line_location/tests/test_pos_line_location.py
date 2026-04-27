@@ -180,6 +180,54 @@ class TestPosLineLocation(TransactionCase):
         self.assertEqual(len(moves), 1)
         self.assertEqual(moves.location_id, self.stock_location)
 
+    def test_split_quantity_across_two_locations_yields_two_moves(self):
+        """Same product split into two lines (qty=2 in A, qty=3 in B) must
+        generate two stock.move with the corresponding quantities."""
+        session = self.env["pos.session"].create(
+            {"config_id": self.pos_config.id}
+        )
+        session.action_pos_session_open()
+
+        order = self.env["pos.order"].create(
+            {
+                "session_id": session.id,
+                "company_id": self.env.company.id,
+                "amount_total": 50.0,
+                "amount_tax": 0.0,
+                "amount_paid": 50.0,
+                "amount_return": 0.0,
+            }
+        )
+        self.env["pos.order.line"].create(
+            {
+                "order_id": order.id,
+                "product_id": self.product.id,
+                "qty": 2.0,
+                "price_unit": 10.0,
+                "price_subtotal": 20.0,
+                "price_subtotal_incl": 20.0,
+                "location_id": self.shelf_a.id,
+            }
+        )
+        self.env["pos.order.line"].create(
+            {
+                "order_id": order.id,
+                "product_id": self.product.id,
+                "qty": 3.0,
+                "price_unit": 10.0,
+                "price_subtotal": 30.0,
+                "price_subtotal_incl": 30.0,
+                "location_id": self.shelf_b.id,
+            }
+        )
+        order._create_order_picking()
+        moves = order.picking_ids.move_ids
+        self.assertEqual(len(moves), 2, "Expected one move per location")
+
+        by_loc = {m.location_id: m.product_uom_qty for m in moves}
+        self.assertEqual(by_loc.get(self.shelf_a), 2.0)
+        self.assertEqual(by_loc.get(self.shelf_b), 3.0)
+
     def test_location_outside_source_is_rejected_silently(self):
         outside = self.env["stock.location"].create(
             {

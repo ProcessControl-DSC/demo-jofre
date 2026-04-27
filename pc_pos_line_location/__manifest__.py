@@ -1,6 +1,6 @@
 {
     "name": "POS - Line Source Location",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "summary": "Select the source stock location per POS order line",
     "description": """
 Allow cashiers to select, for each line of a POS ticket, the internal
