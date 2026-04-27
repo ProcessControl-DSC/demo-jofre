@@ -1,19 +1,31 @@
 .pc-pos-line-location-popup {
-    .pc-pos-line-location-product {
+    .pc-pos-line-location-header {
         margin-bottom: 0.75rem;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
     }
 
-    .pc-pos-line-location-list {
-        max-height: 50vh;
-        overflow-y: auto;
+    .pc-pos-line-location-table {
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
 
-        .list-group-item {
-            cursor: pointer;
+        td, th {
+            vertical-align: middle;
+            padding: 0.4rem 0.5rem;
+        }
 
-            &:hover {
-                background-color: var(--bs-secondary-bg-subtle, #eef2f7);
-            }
+        .pc-pos-line-location-qty-col {
+            width: 7rem;
+        }
+
+        .pc-pos-line-location-qty-input {
+            max-width: 6rem;
+            display: inline-block;
+        }
+
+        .pc-pos-line-location-fill {
+            color: var(--bs-link-color, #0d6efd);
+            text-decoration: none;
+            border-bottom: 1px dotted currentColor;
         }
     }
 }

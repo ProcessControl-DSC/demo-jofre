@@ -96,6 +96,48 @@ msgstr "Cancelar"
 
 #. module: pc_pos_line_location
 #. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/app/popups/select_location_popup.xml:0
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: pc_pos_line_location
+#. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/app/popups/select_location_popup.xml:0
+msgid "Total:"
+msgstr "Total:"
+
+#. module: pc_pos_line_location
+#. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/app/popups/select_location_popup.xml:0
+msgid "Location"
+msgstr "Ubicación"
+
+#. module: pc_pos_line_location
+#. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/app/popups/select_location_popup.xml:0
+msgid "Available"
+msgstr "Disponible"
+
+#. module: pc_pos_line_location
+#. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/app/popups/select_location_popup.xml:0
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: pc_pos_line_location
+#. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/app/popups/select_location_popup.xml:0
+msgid "Assigned total:"
+msgstr "Total asignado:"
+
+#. module: pc_pos_line_location
+#. odoo-javascript
+#: code:addons/pc_pos_line_location/static/src/app/popups/select_location_popup.xml:0
+msgid "Use available quantity"
+msgstr "Usar la cantidad disponible"
+
+#. module: pc_pos_line_location
+#. odoo-javascript
 #: code:addons/pc_pos_line_location/static/src/overrides/components/orderline/orderline.xml:0
 msgid "Click to change source location"
 msgstr "Haz clic para cambiar la ubicación de origen"
