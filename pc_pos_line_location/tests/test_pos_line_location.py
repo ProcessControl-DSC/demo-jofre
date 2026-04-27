@@ -271,3 +271,52 @@ class TestPosLineLocation(TransactionCase):
             self.stock_location,
             "Location not child of source must fall back to default",
         )
+
+    def test_refund_line_propagates_to_move_destination(self):
+        """A pos.order.line with negative qty must propagate the chosen
+        location_id to the location_dest_id of the move (incoming flow)."""
+        receipts = self.env["stock.picking.type"].search(
+            [
+                ("warehouse_id", "=", self.warehouse.id),
+                ("code", "=", "incoming"),
+            ],
+            limit=1,
+        )
+        self.pos_config.picking_type_id.return_picking_type_id = receipts
+
+        session = self.env["pos.session"].create(
+            {"config_id": self.pos_config.id}
+        )
+        session.action_pos_session_open()
+
+        refund_order = self.env["pos.order"].create(
+            {
+                "session_id": session.id,
+                "company_id": self.env.company.id,
+                "amount_total": -10.0,
+                "amount_tax": 0.0,
+                "amount_paid": -10.0,
+                "amount_return": 0.0,
+            }
+        )
+        self.env["pos.order.line"].create(
+            {
+                "order_id": refund_order.id,
+                "product_id": self.product.id,
+                "qty": -1.0,
+                "price_unit": 10.0,
+                "price_subtotal": -10.0,
+                "price_subtotal_incl": -10.0,
+                "location_id": self.shelf_a.id,
+            }
+        )
+        refund_order._create_order_picking()
+        picking = refund_order.picking_ids
+        self.assertTrue(picking, "Refund picking should be generated")
+        moves = picking.move_ids
+        self.assertEqual(len(moves), 1)
+        self.assertEqual(
+            moves.location_dest_id,
+            self.shelf_a,
+            "Refund must land in the chosen shelf as destination",
+        )
