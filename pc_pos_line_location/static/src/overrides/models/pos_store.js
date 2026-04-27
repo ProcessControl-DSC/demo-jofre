@@ -191,18 +191,31 @@ patch(PosStore.prototype, {
 
         for (let i = 1; i < result.length; i++) {
             const alloc = result[i];
+            // The core `addLineToOrder` reads `taxes_id` from
+            // `vals.product_tmpl_id` (the product.template record), so we
+            // must always include it. Passing only `product_id` (the
+            // variant) makes `productTemplate` undefined and triggers a
+            // TypeError ("Cannot read properties of undefined (reading
+            // 'taxes_id')"). We rely on the core to derive `tax_ids` from
+            // the template — the sibling line shares product and taxes.
+            // `attribute_value_ids` must be passed as x2many command
+            // tuples (`[["link", record], ...]`), not as the raw record
+            // collection that lives on the source line.
+            const attributeValueIds = line.attribute_value_ids
+                ? line.attribute_value_ids.map((v) => ["link", v])
+                : undefined;
             const newLine = await this.addLineToOrder(
                 {
+                    product_tmpl_id: product.product_tmpl_id,
                     product_id: product,
                     price_unit: line.price_unit,
                     qty: sign * alloc.qty,
                     discount: line.discount,
-                    tax_ids: line.tax_ids,
-                    attribute_value_ids: line.attribute_value_ids,
+                    attribute_value_ids: attributeValueIds,
                     refunded_orderline_id: line.refunded_orderline_id,
                 },
                 order,
-                { merge: false },
+                {},
                 false
             );
             if (newLine) {
