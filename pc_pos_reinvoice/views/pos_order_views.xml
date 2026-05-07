@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_pos_order_form_inherit_reinvoice" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.reinvoice</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="re_invoiced" readonly="1"/>
+            </xpath>
+            <xpath expr="//page[@name='extra']" position="inside">
+                <group string="Histórico de refacturación"
+                       invisible="not reinvoice_ids">
+                    <field name="reinvoice_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="move_type"/>
+                            <field name="invoice_date"/>
+                            <field name="partner_id"/>
+                            <field name="amount_total_signed"/>
+                            <field name="state"/>
+                        </list>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

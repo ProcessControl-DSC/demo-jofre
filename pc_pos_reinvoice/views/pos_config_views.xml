@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_pos_config_form_inherit_reinvoice" model="ir.ui.view">
+        <field name="name">pos.config.form.inherit.reinvoice</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='other_devices']" position="after">
+                <setting id="pos_reinvoice"
+                         string="Refacturación POS"
+                         help="Permite refacturar pedidos pagados desde el TPV
+                               cambiando el cliente. La opción inferior controla
+                               si se permite tras el cierre de sesión.">
+                    <field name="allow_reinvoice_closed_session"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
