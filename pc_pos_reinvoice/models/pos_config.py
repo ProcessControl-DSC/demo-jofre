@@ -33,12 +33,30 @@ class PosConfig(models.Model):
              "facturado al correo del cliente.",
     )
 
+    _PC_REINVOICE_POS_FIELDS = (
+        "allow_reinvoice",
+        "allow_reinvoice_closed_session",
+        "prompt_email_after_reinvoice",
+        "allow_send_invoice_email",
+    )
+
     @api.model
-    def _load_pos_data_fields(self, config):
-        fields_list = super()._load_pos_data_fields(config)
-        return fields_list + [
-            "allow_reinvoice",
-            "allow_reinvoice_closed_session",
-            "prompt_email_after_reinvoice",
-            "allow_send_invoice_email",
-        ]
+    def _load_pos_data_read(self, records, config):
+        """Expone los campos del módulo al frontend del POS sin restringir
+        la lista de fields que carga el core.
+
+        El patrón ``_load_pos_data_fields = super() + [...]`` no funciona
+        para ``pos.config`` en v19: el mixin base devuelve ``[]`` y el core
+        de ``point_of_sale`` no sobrescribe ``_load_pos_data_fields``,
+        confiando en que ``records.read([])`` devuelva todos los campos.
+        Si añadimos elementos a esa lista, ``read()`` se restringe a esos
+        y rompe el ``_load_pos_data_read`` del core (``KeyError:
+        'use_pricelist'``)."""
+        read_records = super()._load_pos_data_read(records, config)
+        if not read_records:
+            return read_records
+        for record in read_records:
+            cfg = self.browse(record["id"])
+            for fname in self._PC_REINVOICE_POS_FIELDS:
+                record[fname] = bool(cfg[fname])
+        return read_records
