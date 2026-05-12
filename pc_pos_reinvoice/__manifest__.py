@@ -1,6 +1,6 @@
 {
     "name": "PC POS Re-invoice",
-    "version": "19.0.1.0.0",
+    "version": "19.0.2.0.0",
     "summary": "Refacturar un pedido POS pagado cambiando el cliente",
     "description": """
 Permite refacturar un pedido POS pagado desde el propio TPV.
