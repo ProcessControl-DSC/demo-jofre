@@ -11,6 +11,12 @@
                 <i class="fa fa-pencil-square-o me-1"/>
                 Refacturar
             </button>
+            <button class="control-button btn btn-info btn-lg lh-lg flex-grow-1 flex-shrink-1"
+                    t-if="isSendInvoiceEmailVisible(_selectedSyncedOrder)"
+                    t-on-click="() => this.onClickSendInvoiceEmail(_selectedSyncedOrder)">
+                <i class="fa fa-envelope me-1"/>
+                Enviar factura por email
+            </button>
         </xpath>
     </t>
 

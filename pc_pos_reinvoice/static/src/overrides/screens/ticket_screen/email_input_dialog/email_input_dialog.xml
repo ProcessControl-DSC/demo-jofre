@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pc_pos_reinvoice.EmailInputDialog">
+        <Dialog title="props.title" size="'md'">
+            <div class="pc-email-input-dialog">
+                <p t-if="props.body" class="mb-3" t-esc="props.body"/>
+                <label class="form-label" for="pc-email-input-field">
+                    Correo electrónico
+                </label>
+                <input id="pc-email-input-field"
+                       type="email"
+                       class="form-control"
+                       placeholder="cliente@example.com"
+                       t-model="state.email"
+                       t-ref="emailInput"
+                       t-on-keyup="onKeyup"/>
+                <div t-if="state.error"
+                     class="text-danger mt-2 small"
+                     t-esc="state.error"/>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="cancel">
+                    <t t-esc="props.cancelLabel"/>
+                </button>
+                <button class="btn btn-primary" t-on-click="confirm">
+                    <i class="fa fa-paper-plane me-1"/>
+                    <t t-esc="props.confirmLabel"/>
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

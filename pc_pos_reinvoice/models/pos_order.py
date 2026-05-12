@@ -231,6 +231,48 @@ class PosOrder(models.Model):
             return "R5"
         return "R1"
 
+    def action_send_invoice_email(self, email=None):
+        """Envía por correo la factura del pedido al destino indicado.
+
+        Si ``email`` es ``None`` usa el correo del partner del pedido.
+        Usa la plantilla estándar ``account.email_template_edi_invoice``
+        para mandar el PDF de la factura."""
+        self.ensure_one()
+        if not self.config_id.allow_send_invoice_email:
+            raise UserError(_(
+                "El envío de factura por email no está habilitado "
+                "en este TPV."
+            ))
+        if not self.account_move:
+            raise UserError(_(
+                "Este pedido no tiene factura emitida; no hay nada que enviar."
+            ))
+        target_email = (email or self.partner_id.email or "").strip()
+        if not target_email:
+            raise UserError(_(
+                "Indica un correo electrónico para enviar la factura."
+            ))
+        template = self.env.ref(
+            "account.email_template_edi_invoice",
+            raise_if_not_found=False,
+        )
+        if not template:
+            raise UserError(_(
+                "No se encuentra la plantilla de correo de facturas "
+                "(account.email_template_edi_invoice)."
+            ))
+        template.send_mail(
+            self.account_move.id,
+            force_send=True,
+            email_values={"email_to": target_email},
+        )
+        self.message_post(body=_(
+            "Factura %(inv)s enviada por correo a %(email)s.",
+            inv=self.account_move.display_name,
+            email=target_email,
+        ))
+        return True
+
     def action_view_invoice(self):
         action = super().action_view_invoice()
         if self.reinvoice_ids:

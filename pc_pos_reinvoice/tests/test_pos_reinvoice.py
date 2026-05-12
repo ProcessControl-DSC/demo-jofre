@@ -98,6 +98,47 @@ class TestPosReinvoiceChecks(TransactionCase):
 
 
 @tagged("post_install", "-at_install")
+class TestPosSendInvoiceEmail(TransactionCase):
+    """Validaciones de action_send_invoice_email."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.partner = cls.env["res.partner"].create({
+            "name": "Cliente Email Test",
+            "email": "cliente@example.com",
+        })
+        cls.config = cls.env["pos.config"].search([], limit=1)
+        cls.config.allow_send_invoice_email = True
+        cls.session = cls.env["pos.session"].create(
+            {"config_id": cls.config.id}
+        )
+        cls.order = cls.env["pos.order"].create({
+            "session_id": cls.session.id,
+            "partner_id": cls.partner.id,
+            "amount_paid": 0.0,
+            "amount_total": 0.0,
+            "amount_tax": 0.0,
+            "amount_return": 0.0,
+        })
+
+    def test_blocks_when_disabled_in_config(self):
+        self.config.allow_send_invoice_email = False
+        with self.assertRaises(UserError):
+            self.order.action_send_invoice_email("dest@example.com")
+
+    def test_blocks_when_no_invoice(self):
+        self.assertFalse(self.order.account_move)
+        with self.assertRaises(UserError):
+            self.order.action_send_invoice_email("dest@example.com")
+
+    def test_blocks_when_no_target_email(self):
+        self.partner.email = False
+        with self.assertRaises(UserError):
+            self.order.action_send_invoice_email(False)
+
+
+@tagged("post_install", "-at_install")
 class TestPosReinvoiceLocalizationHooks(TransactionCase):
     """Hooks de localización opcionales (l10n_es / l10n_es_edi_verifactu)."""
 
