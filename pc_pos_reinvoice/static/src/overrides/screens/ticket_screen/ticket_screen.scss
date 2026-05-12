@@ -1,0 +1,16 @@
+// Permite que los botones de acción de la pantalla de tickets se
+// distribuyan en varias filas cuando los botones añadidos por este
+// módulo (Refacturar, Enviar factura por email) no caben en la fila
+// estándar de POS.
+.ticket-screen {
+    .control-buttons {
+        flex-wrap: wrap !important;
+        height: auto !important;
+        gap: 8px !important;
+
+        > .control-button {
+            flex: 1 1 calc(33.333% - 6px) !important;
+            min-width: 0 !important;
+        }
+    }
+}

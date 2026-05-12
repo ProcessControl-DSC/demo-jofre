@@ -1,6 +1,6 @@
 {
     "name": "PC POS Re-invoice",
-    "version": "19.0.4.1.0",
+    "version": "19.0.4.1.1",
     "summary": "Refacturar, navegar y enviar por correo facturas de pedidos POS",
     "description": """
 Refacturación de pedidos POS pagados:
