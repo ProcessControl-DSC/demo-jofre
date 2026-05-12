@@ -35,7 +35,7 @@ class PosOrder(models.Model):
         self.ensure_one()
         if self.re_invoiced:
             raise UserError(_("Este pedido ya ha sido refacturado."))
-        if self.refunded_orders_count:
+        if self.refund_orders_count:
             raise UserError(_(
                 "No se puede refacturar un pedido con devoluciones asociadas. "
                 "Hazlo manualmente desde Contabilidad."
