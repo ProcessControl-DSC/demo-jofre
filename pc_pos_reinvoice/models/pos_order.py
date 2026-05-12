@@ -58,13 +58,14 @@ class PosOrder(models.Model):
     def _do_reinvoice(self, new_partner_id):
         self.ensure_one()
         old_partner = self.partner_id
+        old_move = self.account_move
         new_partner = self.env["res.partner"].browse(new_partner_id)
         payment_lines = self._reinvoice_break_reconciliation()
         self._reinvoice_reverse_original()
         self.write({"partner_id": new_partner.id})
         self.account_move = False
         self._reinvoice_clear_localization_flags()
-        new_invoice = self._reinvoice_generate_new_invoice()
+        new_invoice = self._reinvoice_generate_new_invoice(old_move=old_move)
         self._reinvoice_reassign_payments(
             payment_lines, new_partner, new_invoice
         )
@@ -128,10 +129,14 @@ class PosOrder(models.Model):
         Sobreescribir en módulos glue."""
         return
 
-    def _reinvoice_generate_new_invoice(self):
+    def _reinvoice_generate_new_invoice(self, old_move=None):
         """Genera la nueva factura sin pasar por el wrapper
         _generate_pos_order_invoice (que duplicaría apuntes de pago).
-        Replicamos solo _create_invoice + _post."""
+        Replicamos solo _create_invoice + _post.
+
+        ``old_move`` es la factura original que está siendo sustituida.
+        Se pasa para que los hooks de extensión (l10n_es, verifactu...)
+        puedan referenciarla sin depender de filtros sobre reinvoice_ids."""
         self.ensure_one()
         company = self.company_id
         invoice_vals = self._prepare_invoice_vals()

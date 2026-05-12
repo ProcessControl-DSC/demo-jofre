@@ -38,9 +38,9 @@ Datos técnicos
 * ``pos.order._reinvoice_reverse_original`` — escribe
   ``l10n_es_edi_verifactu_refund_reason`` en las líneas ``out_refund``
   generadas (rectificativa).
-* ``pos.order._reinvoice_generate_new_invoice`` — escribe
+* ``pos.order._reinvoice_generate_new_invoice(old_move=...)`` — escribe
   ``l10n_es_edi_verifactu_substituted_entry_id`` en la nueva factura
-  emitida, apuntando a la factura original.
+  emitida, apuntando a ``old_move`` (la factura original sustituida).
 
 **Helpers:**
 

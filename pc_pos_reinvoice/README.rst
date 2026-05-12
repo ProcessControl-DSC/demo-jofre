@@ -48,7 +48,9 @@ Datos técnicos
 * ``_reinvoice_break_reconciliation``
 * ``_reinvoice_reverse_original``
 * ``_reinvoice_clear_localization_flags``
-* ``_reinvoice_generate_new_invoice``
+* ``_reinvoice_generate_new_invoice(old_move=None)`` — recibe la factura
+  original sustituida como argumento, para que extensiones puedan
+  referenciarla sin filtrar reinvoice_ids
 * ``_reinvoice_reassign_payments``
 * ``_reinvoice_post_audit``
 
