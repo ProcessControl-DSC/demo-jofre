@@ -1,16 +1,23 @@
 {
     "name": "PC POS Re-invoice",
-    "version": "19.0.3.0.0",
-    "summary": "Refacturar un pedido POS pagado cambiando el cliente",
+    "version": "19.0.4.0.0",
+    "summary": "Refacturar, navegar y enviar por correo facturas de pedidos POS",
     "description": """
-Permite refacturar un pedido POS pagado desde el propio TPV.
-Cambia el cliente del pedido, lanza una rectificativa de la factura
-original y emite una factura nueva al cliente correcto, manteniendo
-los apuntes de pago reconciliados de forma atómica.
+Refacturación de pedidos POS pagados:
+=====================================
 
-Pensado para los casos en que el cliente solicita factura completa
-(o cambio de destinatario) cuando ya ha salido del TPV con su ticket
-o factura simplificada en mano.
+* Refacturar un pedido pagado desde la pantalla de tickets del TPV
+  cambiando el cliente.
+* Genera la rectificativa de la factura original y emite una nueva
+  factura al cliente correcto, manteniendo los apuntes de pago
+  reconciliados de forma atómica.
+* Envío opcional de la nueva factura por correo electrónico al cliente.
+* Botón independiente para reenviar la factura de un pedido por
+  correo electrónico desde la pantalla de tickets.
+* Smart button en la vista de factura para navegar entre la factura
+  original, la rectificativa y la nueva factura sustitutiva.
+* Soporte automático de la localización española (factura simplificada
+  y Veri*Factu) si los módulos correspondientes están instalados.
     """,
     "author": "Process Control",
     "website": "https://www.processcontrol.es",
@@ -21,6 +28,7 @@ o factura simplificada en mano.
         "account",
     ],
     "data": [
+        "views/account_move_views.xml",
         "views/pos_config_views.xml",
         "views/pos_order_views.xml",
     ],

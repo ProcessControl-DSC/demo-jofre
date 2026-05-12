@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_move_form_inherit_reinvoice" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.pc_pos_reinvoice</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button"
+                        type="object"
+                        name="action_view_pc_reinvoice_related"
+                        icon="fa-retweet"
+                        invisible="pc_reinvoice_related_count == 0">
+                    <field name="pc_reinvoice_related_count"
+                           widget="statinfo"
+                           string="Refacturación POS"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="pc_reinvoice_role"
+                       invisible="not pc_reinvoice_role"
+                       readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

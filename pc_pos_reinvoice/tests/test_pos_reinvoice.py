@@ -31,6 +31,12 @@ class TestPosReinvoiceFields(TransactionCase):
             "allow_send_invoice_email", self.env["pos.config"]._fields
         )
 
+    def test_account_move_smart_button_fields_exist(self):
+        am_fields = self.env["account.move"]._fields
+        self.assertIn("pc_reinvoice_related_ids", am_fields)
+        self.assertIn("pc_reinvoice_related_count", am_fields)
+        self.assertIn("pc_reinvoice_role", am_fields)
+
 
 @tagged("post_install", "-at_install")
 class TestPosReinvoiceChecks(TransactionCase):
