@@ -13,10 +13,22 @@ class TestPosReinvoiceFields(TransactionCase):
     def test_field_reinvoice_ids_exists(self):
         self.assertIn("reinvoice_ids", self.env["pos.order"]._fields)
 
+    def test_setting_allow_reinvoice_exists(self):
+        self.assertIn("allow_reinvoice", self.env["pos.config"]._fields)
+
     def test_setting_allow_reinvoice_closed_session_exists(self):
         self.assertIn(
-            "allow_reinvoice_closed_session",
-            self.env["pos.config"]._fields,
+            "allow_reinvoice_closed_session", self.env["pos.config"]._fields
+        )
+
+    def test_setting_prompt_email_after_reinvoice_exists(self):
+        self.assertIn(
+            "prompt_email_after_reinvoice", self.env["pos.config"]._fields
+        )
+
+    def test_setting_allow_send_invoice_email_exists(self):
+        self.assertIn(
+            "allow_send_invoice_email", self.env["pos.config"]._fields
         )
 
 
@@ -34,6 +46,7 @@ class TestPosReinvoiceChecks(TransactionCase):
             {"name": "Cliente Refactura B"}
         )
         cls.pos_config = cls.env["pos.config"].search([], limit=1)
+        cls.pos_config.allow_reinvoice = True
         cls.pos_config.allow_reinvoice_closed_session = False
         cls.session = cls.env["pos.session"].create(
             {"config_id": cls.pos_config.id}
@@ -46,6 +59,11 @@ class TestPosReinvoiceChecks(TransactionCase):
             "amount_tax": 0.0,
             "amount_return": 0.0,
         })
+
+    def test_blocks_when_disabled_in_config(self):
+        self.pos_config.allow_reinvoice = False
+        with self.assertRaises(UserError):
+            self.order._check_reinvoice_allowed(self.partner_b.id)
 
     def test_blocks_when_already_reinvoiced(self):
         self.order.re_invoiced = True
@@ -76,4 +94,69 @@ class TestPosReinvoiceChecks(TransactionCase):
     def test_allows_open_session(self):
         self.assertTrue(
             self.order._check_reinvoice_allowed(self.partner_b.id)
+        )
+
+
+@tagged("post_install", "-at_install")
+class TestPosReinvoiceLocalizationHooks(TransactionCase):
+    """Hooks de localización opcionales (l10n_es / l10n_es_edi_verifactu)."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.partner = cls.env["res.partner"].create(
+            {"name": "Cliente Refactura Localización"}
+        )
+        cls.config = cls.env["pos.config"].search([], limit=1)
+        cls.session = cls.env["pos.session"].create(
+            {"config_id": cls.config.id}
+        )
+        cls.order = cls.env["pos.order"].create({
+            "session_id": cls.session.id,
+            "partner_id": cls.partner.id,
+            "amount_paid": 0.0,
+            "amount_total": 0.0,
+            "amount_tax": 0.0,
+            "amount_return": 0.0,
+        })
+
+    def test_clear_localization_flags_resets_simplified(self):
+        if "is_l10n_es_simplified_invoice" not in self.order._fields:
+            self.skipTest("l10n_es_pos no instalado en este entorno")
+        self.order.is_l10n_es_simplified_invoice = True
+        self.order._reinvoice_clear_localization_flags()
+        self.assertFalse(self.order.is_l10n_es_simplified_invoice)
+
+    def test_verifactu_refund_reason_returns_false_without_verifactu(self):
+        if "l10n_es_edi_verifactu_refund_reason" in self.env[
+            "account.move"
+        ]._fields:
+            self.skipTest("l10n_es_edi_verifactu instalado")
+        self.assertFalse(
+            self.order._get_reinvoice_verifactu_refund_reason()
+        )
+
+    def test_verifactu_refund_reason_R1_when_not_simplified(self):
+        if "l10n_es_edi_verifactu_refund_reason" not in self.env[
+            "account.move"
+        ]._fields:
+            self.skipTest("l10n_es_edi_verifactu no instalado")
+        if "is_l10n_es_simplified_invoice" in self.order._fields:
+            self.order.is_l10n_es_simplified_invoice = False
+        self.assertEqual(
+            self.order._get_reinvoice_verifactu_refund_reason(),
+            "R1",
+        )
+
+    def test_verifactu_refund_reason_R5_when_simplified(self):
+        if "l10n_es_edi_verifactu_refund_reason" not in self.env[
+            "account.move"
+        ]._fields:
+            self.skipTest("l10n_es_edi_verifactu no instalado")
+        if "is_l10n_es_simplified_invoice" not in self.order._fields:
+            self.skipTest("l10n_es_pos no instalado")
+        self.order.is_l10n_es_simplified_invoice = True
+        self.assertEqual(
+            self.order._get_reinvoice_verifactu_refund_reason(),
+            "R5",
         )

@@ -33,6 +33,11 @@ class PosOrder(models.Model):
 
     def _check_reinvoice_allowed(self, new_partner_id):
         self.ensure_one()
+        if not self.config_id.allow_reinvoice:
+            raise UserError(_(
+                "La refacturación no está habilitada en este TPV. "
+                "Actívala en la configuración del punto de venta."
+            ))
         if self.re_invoiced:
             raise UserError(_("Este pedido ya ha sido refacturado."))
         if self.refund_orders_count:
@@ -102,7 +107,11 @@ class PosOrder(models.Model):
 
     def _reinvoice_reverse_original(self):
         """Crea y postea la rectificativa de la factura original.
-        Almacena original y rectificativa en reinvoice_ids."""
+        Almacena original y rectificativa en reinvoice_ids.
+
+        Si el módulo l10n_es_edi_verifactu está instalado, escribe en la
+        rectificativa la causa de rectificación R1/R5 a partir de
+        ``_get_reinvoice_verifactu_refund_reason``."""
         self.ensure_one()
         if not self.account_move:
             return self.env["account.move"]
@@ -122,21 +131,39 @@ class PosOrder(models.Model):
         self.reinvoice_ids = [(4, original.id)] + [
             (4, move.id) for move in new_moves
         ]
+        refund_reason = self._get_reinvoice_verifactu_refund_reason()
+        if new_moves and refund_reason:
+            rectificativas = new_moves.filtered(
+                lambda move: (
+                    move.move_type == "out_refund"
+                    and "l10n_es_edi_verifactu_refund_reason" in move._fields
+                )
+            )
+            if rectificativas:
+                rectificativas.write({
+                    "l10n_es_edi_verifactu_refund_reason": refund_reason,
+                })
         return new_moves
 
     def _reinvoice_clear_localization_flags(self):
-        """Hook para extensiones (l10n_es, verifactu, etc.).
-        Sobreescribir en módulos glue."""
-        return
+        """Resetea flags de localización antes de regenerar la nueva factura.
+
+        Si el módulo l10n_es_pos está instalado, desmarca
+        ``is_l10n_es_simplified_invoice`` para que la nueva factura sea
+        ordinaria y vaya al diario normal, no al de simplificadas."""
+        self.ensure_one()
+        if "is_l10n_es_simplified_invoice" in self._fields:
+            self.is_l10n_es_simplified_invoice = False
 
     def _reinvoice_generate_new_invoice(self, old_move=None):
         """Genera la nueva factura sin pasar por el wrapper
         _generate_pos_order_invoice (que duplicaría apuntes de pago).
         Replicamos solo _create_invoice + _post.
 
-        ``old_move`` es la factura original que está siendo sustituida.
-        Se pasa para que los hooks de extensión (l10n_es, verifactu...)
-        puedan referenciarla sin depender de filtros sobre reinvoice_ids."""
+        Si el módulo l10n_es_edi_verifactu está instalado y se nos pasó
+        ``old_move``, escribe ``l10n_es_edi_verifactu_substituted_entry_id``
+        en la nueva factura apuntando a ``old_move`` para que Veri*Factu
+        reporte la sustitución correctamente."""
         self.ensure_one()
         company = self.company_id
         invoice_vals = self._prepare_invoice_vals()
@@ -146,6 +173,12 @@ class PosOrder(models.Model):
         )._post()
         self.account_move = invoice
         self.reinvoice_ids = [(4, invoice.id)]
+        if (
+            old_move
+            and "l10n_es_edi_verifactu_substituted_entry_id"
+            in invoice._fields
+        ):
+            invoice.l10n_es_edi_verifactu_substituted_entry_id = old_move
         return invoice
 
     def _reinvoice_reassign_payments(
@@ -176,6 +209,27 @@ class PosOrder(models.Model):
             new=new_partner.display_name,
             inv=new_invoice.display_name,
         ))
+
+    def _get_reinvoice_verifactu_refund_reason(self):
+        """Código R1-R5 que corresponde a la rectificativa de la refacturación.
+
+        R5 — factura rectificativa concerniente a una factura simplificada.
+        R1 — Art. 80.1/80.2 LIVA y error de derecho (caso por defecto al
+        cambiar el destinatario de una factura ordinaria ya emitida).
+
+        Devuelve ``False`` si ``l10n_es_edi_verifactu`` no está instalado
+        o si ``l10n_es_pos`` no aporta el flag de simplificada."""
+        self.ensure_one()
+        if "l10n_es_edi_verifactu_refund_reason" not in self.env[
+            "account.move"
+        ]._fields:
+            return False
+        if (
+            "is_l10n_es_simplified_invoice" in self._fields
+            and self.is_l10n_es_simplified_invoice
+        ):
+            return "R5"
+        return "R1"
 
     def action_view_invoice(self):
         action = super().action_view_invoice()

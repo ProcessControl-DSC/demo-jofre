@@ -10,9 +10,29 @@
                 <setting id="pos_reinvoice"
                          string="Refacturación POS"
                          help="Permite refacturar pedidos pagados desde el TPV
-                               cambiando el cliente. La opción inferior controla
-                               si se permite tras el cierre de sesión.">
-                    <field name="allow_reinvoice_closed_session"/>
+                               cambiando el cliente. Genera rectificativa y
+                               nueva factura, opcionalmente envía la nueva
+                               factura por correo al cliente y permite
+                               reenviar facturas existentes por correo desde
+                               la pantalla de tickets.">
+                    <field name="allow_reinvoice"/>
+                    <div class="row mt8" invisible="not allow_reinvoice">
+                        <div class="col-12">
+                            <field name="allow_reinvoice_closed_session"/>
+                            <label for="allow_reinvoice_closed_session"/>
+                        </div>
+                        <div class="col-12">
+                            <field name="prompt_email_after_reinvoice"/>
+                            <label for="prompt_email_after_reinvoice"/>
+                        </div>
+                    </div>
+                </setting>
+                <setting id="pos_send_invoice_email"
+                         string="Enviar factura por email"
+                         help="Habilita el botón 'Enviar factura por email'
+                               en la pantalla de tickets para reenviar la
+                               factura de un pedido al correo del cliente.">
+                    <field name="allow_send_invoice_email"/>
                 </setting>
             </xpath>
         </field>

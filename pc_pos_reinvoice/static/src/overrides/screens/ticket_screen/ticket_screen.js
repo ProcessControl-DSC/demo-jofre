@@ -16,6 +16,9 @@ patch(TicketScreen.prototype, {
         if (!order) {
             return false;
         }
+        if (!this.pos.config.allow_reinvoice) {
+            return false;
+        }
         if (order.state !== "paid" && order.state !== "done") {
             return false;
         }
