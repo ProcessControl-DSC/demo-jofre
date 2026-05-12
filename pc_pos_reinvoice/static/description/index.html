@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>PC POS Re-invoice — Process Control</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+    color: #334155;
+    line-height: 1.6;
+    font-size: 14px;
+  }
+  .pc-wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 40px 48px;
+  }
+  .pc-hero {
+    background: linear-gradient(135deg, #0f4c81 0%, #1a6dba 100%);
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 36px 40px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  .pc-hero .pc-hero-icon {
+    width: 72px;
+    height: 72px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 36px;
+  }
+  .pc-hero h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+  }
+  .pc-hero .pc-hero-tag {
+    margin: 0;
+    font-size: 15px;
+    opacity: 0.92;
+  }
+  h2 {
+    font-size: 20px;
+    color: #0f4c81;
+    border-bottom: 2px solid #0f4c81;
+    padding-bottom: 8px;
+    margin: 36px 0 18px;
+  }
+  h3 {
+    font-size: 16px;
+    color: #0f4c81;
+    border-bottom: 1px solid #d9e2ec;
+    padding-bottom: 6px;
+    margin: 24px 0 12px;
+  }
+  p {
+    margin: 0 0 12px;
+  }
+  ul {
+    margin: 0 0 14px;
+    padding-left: 22px;
+  }
+  ul li {
+    margin-bottom: 6px;
+  }
+  table.pc-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 12px 0 18px;
+    box-shadow: 0 0 0 1px #d9e2ec;
+  }
+  table.pc-table thead th {
+    background: linear-gradient(180deg, #0f4c81 0%, #1a6dba 100%);
+    color: #ffffff;
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  table.pc-table tbody td {
+    padding: 10px 14px;
+    border-top: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+  table.pc-table tbody tr:nth-child(odd) {
+    background: #f1f6fb;
+  }
+  table.pc-table tbody tr.pc-total td {
+    background: #e5edf6;
+    font-weight: 700;
+  }
+  .pc-callout {
+    border-left: 4px solid #0f4c81;
+    background: #f1f6fb;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 14px 0 18px;
+  }
+  .pc-callout.pc-info {
+    border-left-color: #1a6dba;
+    background: #eef5fb;
+  }
+  .pc-callout.pc-warn {
+    border-left-color: #c47b00;
+    background: #fff8eb;
+  }
+  .pc-callout.pc-ok {
+    border-left-color: #2f9e44;
+    background: #ecfae5;
+  }
+  .pc-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 6px;
+    background: #0f4c81;
+    color: #ffffff;
+  }
+  .pc-badge.pc-secondary {
+    background: #1a6dba;
+  }
+  .pc-badge.pc-warn {
+    background: #c47b00;
+  }
+  .pc-badge.pc-ok {
+    background: #2f9e44;
+  }
+  .pc-badge.pc-soft {
+    background: #e2e8f0;
+    color: #0f4c81;
+  }
+  code {
+    font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+    background: #f1f6fb;
+    color: #0f4c81;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .pc-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+  .pc-feature {
+    background: #f8fbff;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .pc-feature .pc-feature-title {
+    color: #0f4c81;
+    font-weight: 700;
+    font-size: 14px;
+    margin: 0 0 8px;
+  }
+  .pc-feature p {
+    margin: 0;
+    font-size: 13px;
+    color: #475569;
+  }
+  .pc-step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .pc-step .pc-step-num {
+    width: 28px;
+    height: 28px;
+    background: #0f4c81;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .pc-step .pc-step-body {
+    padding-top: 2px;
+  }
+  .pc-step .pc-step-body p {
+    margin: 0;
+  }
+  .pc-screenshot {
+    background: #f1f6fb;
+    border: 1px dashed #94a3b8;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+    margin: 12px 0 18px;
+  }
+  .pc-screenshot img {
+    max-width: 100%;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(15, 76, 129, 0.15);
+  }
+  .pc-footer {
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid #d9e2ec;
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+  }
+  .pc-footer a {
+    color: #0f4c81;
+    text-decoration: none;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="pc-wrap">
+
+  <div class="pc-hero">
+    <div class="pc-hero-icon">↻</div>
+    <div>
+      <h1>PC POS Re-invoice</h1>
+      <p class="pc-hero-tag">
+        Refacturar pedidos POS pagados, navegar entre facturas
+        relacionadas y enviar facturas por correo electrónico — todo
+        desde el propio TPV.
+      </p>
+    </div>
+  </div>
+
+  <h2>Qué resuelve</h2>
+  <p>
+    En las ventas de TPV es habitual que un cliente solicite una factura
+    nominativa después de salir con su ticket simplificado, o que pida
+    cambiar el destinatario de una factura ya emitida. Resolver esto
+    desde el backend requiere abrir contabilidad, emitir rectificativa,
+    cambiar cliente y refacturar — un flujo lento y propenso a errores.
+  </p>
+  <p>
+    Este módulo añade ese flujo dentro del propio TPV. Con un solo botón
+    en la pantalla de tickets, refactura el pedido cambiando el cliente,
+    emite la rectificativa de la factura original y la nueva factura al
+    cliente correcto, reasignando además los apuntes de pago de forma
+    atómica.
+  </p>
+
+  <h2>Funcionalidades</h2>
+  <div class="pc-feature-grid">
+    <div class="pc-feature">
+      <p class="pc-feature-title">↻ Botón Refacturar</p>
+      <p>
+        Visible en la lista de tickets para pedidos pagados con factura
+        emitida. Permite cambiar el cliente y reemitir la factura sin
+        salir del TPV.
+      </p>
+    </div>
+    <div class="pc-feature">
+      <p class="pc-feature-title">✉ Envío por correo</p>
+      <p>
+        Botón para reenviar la factura de un pedido al correo del
+        cliente, y opción para ofrecer el envío automático al terminar
+        una refacturación.
+      </p>
+    </div>
+    <div class="pc-feature">
+      <p class="pc-feature-title">🔗 Navegación entre facturas</p>
+      <p>
+        Smart button en la vista de factura que enlaza la original, la
+        rectificativa y la nueva factura sustitutiva. Un clic salta a la
+        lista del trío completo.
+      </p>
+    </div>
+    <div class="pc-feature">
+      <p class="pc-feature-title">🇪🇸 Localización española</p>
+      <p>
+        Soporte automático de factura simplificada (l10n_es_pos) y
+        Veri*Factu (l10n_es_edi_verifactu) cuando los módulos
+        correspondientes están instalados.
+      </p>
+    </div>
+  </div>
+
+  <h2>Configuración</h2>
+  <p>
+    Cada TPV puede activar las funciones de forma independiente. Ruta:
+    <code>Punto de Venta &gt; Configuración &gt; Punto de Venta</code>.
+  </p>
+  <table class="pc-table">
+    <thead>
+      <tr>
+        <th>Campo</th>
+        <th>Tipo</th>
+        <th>Descripción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>allow_reinvoice</code></td>
+        <td>Boolean</td>
+        <td>Habilita el botón "Refacturar" en la pantalla de tickets.</td>
+      </tr>
+      <tr>
+        <td><code>allow_reinvoice_closed_session</code></td>
+        <td>Boolean</td>
+        <td>
+          Permite refacturar incluso cuando la sesión POS ya está
+          cerrada. Por defecto desactivado para forzar el control
+          contable a través de la sesión abierta.
+        </td>
+      </tr>
+      <tr>
+        <td><code>prompt_email_after_reinvoice</code></td>
+        <td>Boolean</td>
+        <td>
+          Al terminar una refacturación, ofrece enviar la nueva factura
+          al correo del nuevo cliente.
+        </td>
+      </tr>
+      <tr>
+        <td><code>allow_send_invoice_email</code></td>
+        <td>Boolean</td>
+        <td>
+          Habilita el botón "Enviar factura por email" para reenviar la
+          factura de cualquier pedido facturado.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Cómo se usa</h2>
+
+  <h3>Refacturar un pedido</h3>
+  <div class="pc-step">
+    <div class="pc-step-num">1</div>
+    <div class="pc-step-body">
+      <p>En el TPV, abrir la lista de tickets y seleccionar el pedido a refacturar.</p>
+    </div>
+  </div>
+  <div class="pc-step">
+    <div class="pc-step-num">2</div>
+    <div class="pc-step-body">
+      <p>Pulsar el botón <span class="pc-badge pc-warn">Refacturar</span> en la barra inferior de la pantalla de tickets.</p>
+    </div>
+  </div>
+  <div class="pc-step">
+    <div class="pc-step-num">3</div>
+    <div class="pc-step-body">
+      <p>Elegir el nuevo cliente en la lista de partners.</p>
+    </div>
+  </div>
+  <div class="pc-step">
+    <div class="pc-step-num">4</div>
+    <div class="pc-step-body">
+      <p>
+        El sistema emite la rectificativa de la factura original y
+        genera la nueva factura al cliente correcto, reasignando los
+        apuntes de pago.
+      </p>
+    </div>
+  </div>
+  <div class="pc-step">
+    <div class="pc-step-num">5</div>
+    <div class="pc-step-body">
+      <p>
+        Si está activa la opción correspondiente, se ofrece el envío de
+        la nueva factura al correo electrónico del cliente.
+      </p>
+    </div>
+  </div>
+
+  <h3>Reenviar factura por correo</h3>
+  <div class="pc-step">
+    <div class="pc-step-num">1</div>
+    <div class="pc-step-body">
+      <p>Abrir la lista de tickets y seleccionar el pedido facturado.</p>
+    </div>
+  </div>
+  <div class="pc-step">
+    <div class="pc-step-num">2</div>
+    <div class="pc-step-body">
+      <p>Pulsar el botón <span class="pc-badge pc-secondary">Enviar factura por email</span>.</p>
+    </div>
+  </div>
+  <div class="pc-step">
+    <div class="pc-step-num">3</div>
+    <div class="pc-step-body">
+      <p>
+        Introducir o confirmar la dirección de correo. El sistema
+        precarga el email del cliente si lo tiene en su ficha.
+      </p>
+    </div>
+  </div>
+
+  <h3>Navegar entre facturas relacionadas</h3>
+  <div class="pc-step">
+    <div class="pc-step-num">1</div>
+    <div class="pc-step-body">
+      <p>
+        Abrir cualquiera de las facturas del trío: original, rectificativa
+        o nueva sustitutiva.
+      </p>
+    </div>
+  </div>
+  <div class="pc-step">
+    <div class="pc-step-num">2</div>
+    <div class="pc-step-body">
+      <p>
+        En la barra de botones superior aparece el smart button
+        <span class="pc-badge pc-soft">↻ Refacturación POS</span> con el
+        contador de facturas relacionadas.
+      </p>
+    </div>
+  </div>
+  <div class="pc-step">
+    <div class="pc-step-num">3</div>
+    <div class="pc-step-body">
+      <p>
+        Al pulsarlo se abre la lista con las tres facturas del trío
+        (original + rectificativa + nueva) etiquetadas por su rol.
+      </p>
+    </div>
+  </div>
+
+  <h2>Integración con la localización española</h2>
+  <p>
+    Cuando los módulos <code>l10n_es_pos</code> y/o
+    <code>l10n_es_edi_verifactu</code> están instalados, el flujo de
+    refacturación se adapta automáticamente:
+  </p>
+
+  <table class="pc-table">
+    <thead>
+      <tr>
+        <th>Aspecto</th>
+        <th>Comportamiento</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Factura simplificada</td>
+        <td>
+          Antes de emitir la nueva factura se desmarca
+          <code>is_l10n_es_simplified_invoice</code>, de modo que la
+          nueva sea ordinaria y vaya al diario normal en lugar del
+          reservado a simplificadas.
+        </td>
+      </tr>
+      <tr>
+        <td>Causa de rectificación Veri*Factu</td>
+        <td>
+          Se asigna <code>l10n_es_edi_verifactu_refund_reason</code> en
+          la rectificativa <code>out_refund</code>:
+          <span class="pc-badge pc-warn">R5</span> si la original era
+          simplificada,
+          <span class="pc-badge pc-secondary">R1</span> (Art. 80.1/80.2
+          LIVA y error de derecho) en el resto.
+        </td>
+      </tr>
+      <tr>
+        <td>Sustitución Veri*Factu</td>
+        <td>
+          La nueva factura recibe
+          <code>l10n_es_edi_verifactu_substituted_entry_id</code>
+          apuntando a la original, para que el envío AEAT reporte el
+          flujo como <code>correction_substitution</code> (método
+          "S - sustitución" AEAT).
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="pc-callout pc-info">
+    <strong>Por qué este patrón:</strong> el wizard nativo
+    <code>account.move.reversal</code> de Veri*Factu solo asigna estos
+    campos automáticamente cuando se invoca con
+    <code>modify_moves()</code>. La refacturación POS separa
+    rectificativa y nueva factura (vía <code>refund_moves()</code>) para
+    preservar la integridad de pagos, así que el módulo asigna los
+    campos a mano replicando la semántica del flujo nativo.
+  </div>
+
+  <h2>Bloqueos automáticos</h2>
+  <p>
+    La refacturación no puede ejecutarse en las siguientes situaciones,
+    para proteger la integridad contable:
+  </p>
+  <ul>
+    <li>El TPV tiene la refacturación desactivada.</li>
+    <li>El pedido ya ha sido refacturado anteriormente.</li>
+    <li>El pedido tiene devoluciones asociadas (debe gestionarse desde contabilidad).</li>
+    <li>No se ha seleccionado un cliente nuevo, o el nuevo coincide con el actual.</li>
+    <li>La sesión POS está cerrada y el TPV no permite refacturación post-cierre.</li>
+  </ul>
+
+  <h2>Datos técnicos</h2>
+
+  <h3>Modelos extendidos</h3>
+  <table class="pc-table">
+    <thead>
+      <tr>
+        <th>Modelo</th>
+        <th>Campos / Métodos añadidos</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>pos.order</code></td>
+        <td>
+          Campos <code>re_invoiced</code>, <code>reinvoice_ids</code>.
+          Métodos <code>action_pos_reinvoice</code>,
+          <code>action_send_invoice_email</code>.
+        </td>
+      </tr>
+      <tr>
+        <td><code>pos.config</code></td>
+        <td>
+          <code>allow_reinvoice</code>,
+          <code>allow_reinvoice_closed_session</code>,
+          <code>prompt_email_after_reinvoice</code>,
+          <code>allow_send_invoice_email</code>.
+        </td>
+      </tr>
+      <tr>
+        <td><code>account.move</code></td>
+        <td>
+          <code>pc_reinvoice_related_ids</code>,
+          <code>pc_reinvoice_related_count</code>,
+          <code>pc_reinvoice_role</code>, acción del smart button
+          <code>action_view_pc_reinvoice_related</code>.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Hooks de extensión</h3>
+  <ul>
+    <li><code>_reinvoice_break_reconciliation</code></li>
+    <li><code>_reinvoice_reverse_original</code></li>
+    <li><code>_reinvoice_clear_localization_flags</code></li>
+    <li><code>_reinvoice_generate_new_invoice(old_move=None)</code> — recibe la factura sustituida como argumento</li>
+    <li><code>_reinvoice_reassign_payments</code></li>
+    <li><code>_reinvoice_post_audit</code></li>
+  </ul>
+
+  <h3>Dependencias</h3>
+  <p>
+    Mínimas: <code>point_of_sale</code> y <code>account</code>. La
+    integración con la localización española es opcional y se activa
+    automáticamente si están presentes <code>l10n_es_pos</code> o
+    <code>l10n_es_edi_verifactu</code>.
+  </p>
+
+  <div class="pc-footer">
+    <p>
+      Desarrollado por
+      <a href="https://www.processcontrol.es" target="_blank">Process Control</a>
+    </p>
+    <p>
+      <span class="pc-badge pc-soft">v19.0.4.0.0</span>
+      <span class="pc-badge pc-soft">LGPL-3</span>
+      <span class="pc-badge pc-soft">Odoo 19.0</span>
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
